@@ -10,3 +10,6 @@
 
 ## Online learning
 * [Code Academy Python Classes](https://www.codecademy.com/catalog/language/python)
+
+## Tutorials
+* [pyGNMI and ChatGPT to troubleshoot EVPN Datacenter Fabrics](https://youtu.be/dyY4PUFV2nw): This tutorial is suitable for both experienced network engineers and beginners who want to enhance their knowledge of datacenter network design (EVPN-VXLAN) and operation with tools like GNMI, python and ChatGPT. This tutorial uses containerlab: topology and tutorial files at [github repo pygnmi-srl-nanog88](https://github.com/cloud-native-everything/pygnmi-srl-nanog88). 
