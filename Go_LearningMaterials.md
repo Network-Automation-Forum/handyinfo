@@ -22,3 +22,6 @@ Blatently stolen from Ryan Shaw in the NAF Slack on 1 December 2023. Some extra 
 * [Learning Go with Tests](https://quii.gitbook.io/learn-go-with-tests/) - free - tdd based
 * [Go Class YouTube](https://www.youtube.com/watch?v=iDQAZEJK8lI&list=PLoILbKo9rG3skRCj37Kn5Zj803hhiuRK6) - free
 * [Test with Go](https://testwithgo.com/)
+
+## Tutorials
+* [pyGNMI and ChatGPT to troubleshoot EVPN Datacenter Fabrics](https://youtu.be/dyY4PUFV2nw): This tutorial is suitable for both experienced network engineers and beginners who want to enhance their knowledge of datacenter network design (EVPN-VXLAN) and operation with tools like GNMI, python and ChatGPT. This tutorial useds containerlab: topology and tutorial files at [github repo pygnmi-srl-nanog88](https://github.com/cloud-native-everything/pygnmi-srl-nanog88). 
