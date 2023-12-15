@@ -8,3 +8,7 @@ Markdown formatting.
 We'll probably need to add a directory structure at some point. For now we'll keep it flat and revisit after we know what kind of stuff actually shows up...
 
 Go nuts.
+
+## Prior Art
+
+There is a nice, big list of links here: https://github.com/networktocode/awesome-network-automation
