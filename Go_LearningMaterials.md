@@ -22,3 +22,4 @@ Blatently stolen from Ryan Shaw in the NAF Slack on 1 December 2023. Some extra 
 * [Learning Go with Tests](https://quii.gitbook.io/learn-go-with-tests/) - free - tdd based
 * [Go Class YouTube](https://www.youtube.com/watch?v=iDQAZEJK8lI&list=PLoILbKo9rG3skRCj37Kn5Zj803hhiuRK6) - free
 * [Test with Go](https://testwithgo.com/)
+* [Go Fundamentals for Network Automation](https://www.packetcoders.io/go-fundamentals-for-network-automation/) - Packet Coders
