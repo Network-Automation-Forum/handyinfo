@@ -1,5 +1,5 @@
 # Ansible Learning Materials
-Note: Think about using Nornir instead: [https://github.com/nornir-automation/nornir]9https://github.com/nornir-automation/nornir)
+Note: Think about using Nornir instead: [Nornir Learning Materials](https://github.com/Network-Automation-Forum/handyinfo/blob/main/Nornir_LearningMaterials.md)
 
 ## Documentation
 * [https://www.ansible.com/](https://www.ansible.com/)
