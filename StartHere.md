@@ -3,7 +3,7 @@
 ## Fundamentals
 * [Python](https://github.com/Network-Automation-Forum/handyinfo/blob/main/Python_LearningMaterials.md) Programming Language
 * [Go](https://github.com/Network-Automation-Forum/handyinfo/blob/main/Go_LearningMaterials.md) Programming Langauage
-* Git Version Control (need a page for this)
+* [Git](https://github.com/Network-Automation-Forum/handyinfo/blob/main/Git_LearningMaterials.md) Version Control
 * [Ansible](https://github.com/Network-Automation-Forum/handyinfo/blob/main/Ansible_LearningMaterials.md) Automation Framework
 * Nornir Automation Framework (need a page for this)
 * More needed here... (gNMI, pydantic, SuzieQ, Netmiko, BatFish, Source of Truth (SoT), etc......)
