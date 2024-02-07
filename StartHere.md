@@ -15,8 +15,8 @@
 ## Communities on Slack
 * [Network Automation Forum](https://join.slack.com/t/networkautoma-prb3593/shared_invite/zt-25rdfdmyf-qYoYgXEEMs7h_aqwC79Abg)
 * [NetDev Community](https://join.slack.com/t/netdev-community/shared_invite/zt-2c735ssis-OClIilW0~P4wll2OXW4rsw)
-* [Cloud Networking as Code](cloud-network-as-code.slack.com)
-* [Network to Code](networktocode.slack.com)
+* [Cloud Networking as Code](https://join.slack.com/t/cloud-network-as-code/shared_invite/zt-2c9xkvt1w-0BpC_wLNPFnjfLGVx7Em_A)
+* [Network to Code](https://networktocode.slack.com)
 
 ## Training Providers
 * [Python for Network Engineers](https://pynet.twb-tech.com/network-automation-courses.html)
