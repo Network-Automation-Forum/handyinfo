@@ -1,5 +1,9 @@
-# handyinfo
-Information about network automation, orchestration, and observability that you might just find handy.
+# Handy Info
+Information about network automation, orchestration, and observability that you just might find handy.
+
+First time here? New to Network Automation? [START HERE](https://github.com/Network-Automation-Forum/handyinfo/blob/main/StartHere.md)
+
+## About this repo...
 
 Mostly this is stuff that comes out of discussions in our [Slack channel](https://join.slack.com/t/networkautoma-prb3593/shared_invite/zt-25rdfdmyf-qYoYgXEEMs7h_aqwC79Abg) or at our events. It can come from anywhere though, just make sure it is practical and accurate.
 
