@@ -12,3 +12,7 @@ Go nuts.
 ## Prior Art
 
 There is a nice, big list of links here: https://github.com/networktocode/awesome-network-automation
+
+## Other Sources
+
+The Packet Pushers published a list of [open source networking projects](https://packetpushers.net/blog/open-source-networking-projects/) that might be handy
