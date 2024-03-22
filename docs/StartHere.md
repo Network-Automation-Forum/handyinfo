@@ -1,12 +1,12 @@
 # Where to start with Network Automation, Orchestration, and Observability?
 
 ## Fundamentals
-* [Python](https://github.com/Network-Automation-Forum/handyinfo/blob/main/Python_LearningMaterials.md) Programming Language
-* [Go](https://github.com/Network-Automation-Forum/handyinfo/blob/main/Go_LearningMaterials.md) Programming Langauage
-* [Git](https://github.com/Network-Automation-Forum/handyinfo/blob/main/Git_LearningMaterials.md) Version Control
-* [Ansible](https://github.com/Network-Automation-Forum/handyinfo/blob/main/Ansible_LearningMaterials.md) Automation Framework
-* [Nornir](https://github.com/Network-Automation-Forum/handyinfo/blob/main/Nornir_LearningMaterials.md) Automation Framework
-* [Autonomicon](https://github.com/Network-Automation-Forum/autonomicon) - We're building out a lexicon / glossary for "standard" and/or common network automation terms and concepts...
+* [Python](learning_materials/python.md) Programming Language
+* [Go](learning_materials/go.md) Programming Langauage
+* [Git](learning_materials/git.md) Version Control
+* [Ansible](learning_materials/ansible.md) Automation Framework
+* [Nornir](learning_materials/nornir.md) Automation Framework
+* [Autonomicon](https://autonomicon.networkautomation.forum/) - We're building out a lexicon / glossary for "standard" and/or common network automation terms and concepts...
 * More needed here...
 
 ## Books

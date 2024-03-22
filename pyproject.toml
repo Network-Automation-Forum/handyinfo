@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "autonomicon"
+version = "0.1.0"
+description = "lexicon / glossary for \"standard\" and/or common network automation terms and concepts"
+authors = ["Network Automation Community"]
+license = "CC0 1.0 Universal"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.group.dev.dependencies]
+yamllint = "*"
+Markdown = "*"
+mkdocs = "^1.5.3"
+mkdocs-material = "^9.5.13"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

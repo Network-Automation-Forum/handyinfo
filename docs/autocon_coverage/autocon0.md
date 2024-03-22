@@ -12,13 +12,13 @@ A collection of links to AC0 related content.
 -   [Interesting selection of perspectives from a group of real experts in the automation space to make things better in #networkautomation](https://a1e0.engage.squarespace-mail.com/r?m=6562645d25a7b919a97d1308&u=https%3A%2F%2Fwww.linkedin.com%2Fposts%2Fdaren-fulwell_networkautomation-activity-7130361605321547776-1QvB%2F&w=649cad5ada79907a2572d1f1&c=b_656235da25a7b919a97568db&e=2023-11-26T21%3A17%3A43.533310Z&l=en-US&s=FU8915fhXGl6rHd5VxVdhA7lzWk%3D) by Daren Fulwell on LinkedIn - 13 key points presented as bullets.
 -   Autocon 0 - [Day 1](https://a1e0.engage.squarespace-mail.com/r?m=6562645d25a7b919a97d1308&u=https%3A%2F%2Fwww.linkedin.com%2Fposts%2Falexhenthorniwane_autocon-0-day-1-was-filled-with-great-talks-activity-7130217992096796672-Qerh%2F&w=649cad5ada79907a2572d1f1&c=b_656235da25a7b919a97568db&e=2023-11-26T21%3A17%3A43.533310Z&l=en-US&s=5WMHfnQZnLrk-YDe52g877xxPPc%3D) & [Day 2](https://a1e0.engage.squarespace-mail.com/r?m=6562645d25a7b919a97d1308&u=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2Fupdate%2Furn%3Ali%3Aactivity%3A7130717261962608640%2F&w=649cad5ada79907a2572d1f1&c=b_656235da25a7b919a97568db&e=2023-11-26T21%3A17%3A43.533310Z&l=en-US&s=WKgOzTEMR7yBaOeWfqibto8BSNE%3D) by Alex Henthorn-Iwane on LinkedIn - possibly the best combination of completeness and conciseness, covering the content from the conference.
 -   [With #autocon0 officially wrapped up here are my takeaways from the last couple of days](https://a1e0.engage.squarespace-mail.com/r?m=6562645d25a7b919a97d1308&u=https%3A%2F%2Fwww.linkedin.com%2Ffeed%2Fupdate%2Furn%3Ali%3Aactivity%3A7130435725954551808%3FupdateEntityUrn%3Durn%253Ali%253Afs_feedUpdate%253A%2528V2%252Curn%253Ali%253Aactivity%253A7130435725954551808%2529&w=649cad5ada79907a2572d1f1&c=b_656235da25a7b919a97568db&e=2023-11-26T21%3A17%3A43.533310Z&l=en-US&s=T_MWr2uKE2qmLsqa9JleJW0z_CA%3D) by Kaon Thana on LinkedIn - 9 takeaways bathed in humor.
--   AutoCon 0 Happened - https://brunowollmann.com/2023/11/autocon-0-happened/ by Bruno Wollman - nice overview of the event with a focus on five key insights and possible next steps.
--   https://www.itential.com/blog/company/hybrid-cloud-automation/observations-from-naf-autocon0-the-need-to-differentiate-automation-orchestration/ 
--   https://packetpushers.net/3-takeaways-from-autocon0/ 
+-   [AutoCon 0 Happened](https://brunowollmann.com/2023/11/autocon-0-happened/) - by Bruno Wollman - nice overview of the event with a focus on five key insights and possible next steps.
+-   [https://www.itential.com/blog/company/hybrid-cloud-automation/observations-from-naf-autocon0-the-need-to-differentiate-automation-orchestration/](https://www.itential.com/blog/company/hybrid-cloud-automation/observations-from-naf-autocon0-the-need-to-differentiate-automation-orchestration/) 
+-   [https://packetpushers.net/3-takeaways-from-autocon0/](https://packetpushers.net/3-takeaways-from-autocon0/) 
 
 ## Podcasts
--   https://www.itential.com/resource/podcast/telemetry-now-why-the-network-industry-is-struggling-to-fully-adopt-network-automation/ 
--   https://overcast.fm/+GptXEtRdA 
+-   [https://www.itential.com/resource/podcast/telemetry-now-why-the-network-industry-is-struggling-to-fully-adopt-network-automation/](https://www.itential.com/resource/podcast/telemetry-now-why-the-network-industry-is-struggling-to-fully-adopt-network-automation/) 
+-   [https://overcast.fm/+GptXEtRdA](https://overcast.fm/+GptXEtRdA) 
 
 ## Videos
--   https://www.youtube.com/watch?v=6JdtQtxgw2E&t=194s More coming soon!
+-   [https://www.youtube.com/watch?v=6JdtQtxgw2E&t=194s](https://www.youtube.com/watch?v=6JdtQtxgw2E&t=194s) More coming soon!
