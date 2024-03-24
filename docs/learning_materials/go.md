@@ -3,9 +3,9 @@ Blatently stolen from Ryan Shaw in the NAF Slack on 1 December 2023. Some extra 
 # some learning materials for go
 
 ## docs in order
-1. https://go.dev/tour/welcome/1
-2. https://gobyexample.com/
-3. https://go.dev/doc/effective_go
+1. [https://go.dev/tour/welcome/1](https://go.dev/tour/welcome/1)
+2. [https://gobyexample.com/](https://gobyexample.com/)
+3. [https://go.dev/doc/effective_go](https://go.dev/doc/effective_go)
 
 ## Books
 * [The Go Programming Language](https://www.amazon.com/Programming-Language-Addison-Wesley-Professional-Computing/dp/0134190440) - a bit dry

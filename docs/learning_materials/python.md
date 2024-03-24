@@ -1,7 +1,7 @@
 # Python learning materials
 
 ## Documentation
-* https://www.python.org/doc/
+* [https://www.python.org/doc/](https://www.python.org/doc/)
 
 ## Books
 * [Fluent Python: Clear, Concise, and Effective Programming](https://www.amazon.com/Fluent-Python-Concise-Effective-Programming/dp/1492056359/)
