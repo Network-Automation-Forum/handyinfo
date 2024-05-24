@@ -7,6 +7,7 @@
 * [Fluent Python: Clear, Concise, and Effective Programming](https://www.amazon.com/Fluent-Python-Concise-Effective-Programming/dp/1492056359/)
 * [Mastering Python Networking: Your one-stop solution to using Python for network automation, programmability, and DevOps, 3rd Edition](https://www.amazon.com/Mastering-Python-Networking-automation-programmability/dp/1839214678/)
 * [Network Programming and Automation Essentials: Get started in the realm of network automation using Python and Go](https://www.amazon.com/Network-Programming-Automation-Essentials-automation-ebook/dp/B0BMVV58CD/)
+* [Cisco pyATS ― Network Test and Automation Solution: Data-driven and reusable testing for modern networks](https://www.amazon.com/Cisco-pyATS_Network-Test-Automation-Solution/dp/0138031673)
 
 ## Videos
 * [Practical Python For Networking, Part 1:  Introduction](https://www.youtube.com/watch?v=RQtGxMlotY8&list=PLtO_OYBiEo6l6-VaNn1Eev_RW-mnFYXl-)
