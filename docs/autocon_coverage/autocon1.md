@@ -9,3 +9,6 @@ A collection of links to AC1 related content.
 
 ## Videos
 -   [Network Automation Forum - Autocon1 | The Interviews](https://www.youtube.com/watch?v=zJ6YE7iFAhA) - by Roger Perkin
+
+## Slides
+-   All slides from the event are [available for download](https://github.com/Network-Automation-Forum/handyinfo/tree/main/docs/autocon_coverage/slides/AutoCon1)
