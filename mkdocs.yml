@@ -5,6 +5,7 @@ nav:
   - Home: "index.md"
   - Start Here: "StartHere.md"
   - Learning Materials:
+    - General: "learning_materials/general.md"
     - Python: "learning_materials/python.md"
     - GoLang: "learning_materials/go.md"
     - Git: "learning_materials/git.md"
