@@ -8,6 +8,7 @@
 ## Training Providers
 * [Python for Network Engineers](https://pynet.twb-tech.com/network-automation-courses.html)
 * [Packet Coders](https://www.packetcoders.io/courses/)
+* [exercism](https://exercism.org) Completely free, test driven programming courses (71 languages) with web based vscode, so no local installation requirements. 
 * More needed here...
 
 
