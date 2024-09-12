@@ -8,12 +8,12 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-mkdocs-include-markdown-plugin = "^6.2.2"
 
 [tool.poetry.group.dev.dependencies]
 yamllint = "*"
 Markdown = "*"
 mkdocs = "^1.5.3"
+mkdocs-include-markdown-plugin = "^6.2.2"
 mkdocs-material = "^9.5.13"
 
 [build-system]
