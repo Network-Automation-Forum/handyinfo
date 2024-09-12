@@ -19,3 +19,12 @@
 
 ## Tutorials
 * [pyGNMI and ChatGPT to troubleshoot EVPN Datacenter Fabrics](https://youtu.be/dyY4PUFV2nw): This tutorial is suitable for both experienced network engineers and beginners who want to enhance their knowledge of datacenter network design (EVPN-VXLAN) and operation with tools like GNMI, python and ChatGPT. This tutorial uses containerlab: topology and tutorial files at [github repo pygnmi-srl-nanog88](https://github.com/cloud-native-everything/pygnmi-srl-nanog88). 
+* [Get Started with Network Automation! Co-Instructed Workshop](https://github.internet2.edu/sbyrnes/2023-commex-workshop-automation)
+    * This was a community developed workshop provided at Internet2's Community Exchange 2023 for data modelling and multi-vendor automation with Ansible and Netmiko. This github contains the assets used, including slides and containerlab assets.
+    * Co-instructed by the Indiana University GlobalNOC, GÉANT, and Internet2.
+* [Get Started with Network Automation! Mini-workshop](https://github.internet2.edu/sbyrnes/2024-lonisummit-workshop-automation/tree/main/internal-lab-setup-assets)
+    * This was a community developed workshop provided at the Louisiana Optical Network Initiative (LONI) 2024 Summit. _Very_ similar to above, but shorter and with a focus on Cisco-based CLI-scraping.
+
+## Other References
+
+Check out the [Software Development Concepts](general.md#software-development-concepts) section for learning applicable to all languages.
