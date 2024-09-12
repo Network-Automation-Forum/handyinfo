@@ -10,6 +10,7 @@ nav:
     - GoLang: "learning_materials/go.md"
     - Git: "learning_materials/git.md"
     - Ansible: "learning_materials/ansible.md"
+    - Terraform: "learning_materials/terraform.md"
     - Nornir: "learning_materials/nornir.md"
   - AutoCon Coverage:
     - AutoCon0: "autocon_coverage/autocon0.md"
