@@ -10,7 +10,7 @@ Mostly this is stuff that comes out of discussions in our [Slack channel](https:
 
 ## Prior Art
 
-There is a nice, big list of links here: https://github.com/networktocode/awesome-network-automation
+There is a nice, big list of links in NetworkToCode's Github [here](https://github.com/networktocode/awesome-network-automation).
 
 ## Other Sources
 
