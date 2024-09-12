@@ -33,6 +33,7 @@ router ospf {{ ospf_process_id }}
 ```
 
 This is a rudimentary example. However, you may be thinking,
+
 - What if I have different platforms with different syntax?
 - Can I do for-loops for interfaces?
 - What about secret keys?
@@ -61,4 +62,4 @@ For those with templates already, this is your [call to action](#contributing) t
 
 Use the handy link at the top-right to reach the Network Automation Forum's [handyinfo repository](https://github.com/Network-Automation-Forum/handyinfo) (that's this site!)
 
-Clone the repository, create a branch, add your awesome templates to this section, and then submit your [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) to be merged in. Learn more on how to contribute at our [README](https://github.com/Network-Automation-Forum/handyinfo/tree/main).
+Create a [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo), clone your forked repository, add your awesome templates to this section, and then submit your [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) to be merged in. Learn more on how to contribute with our [contributing guidelines](https://github.com/Network-Automation-Forum/handyinfo/blob/main/.github/CONTRIBUTING.md) and at our [README](https://github.com/Network-Automation-Forum/handyinfo/tree/main).
