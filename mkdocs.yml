@@ -1,35 +1,43 @@
 ---
 site_name: "Handy Info Docs"
-site_description: Information about network automation, orchestration, and observability that you just might find handy.
+site_description: "Information about network automation, orchestration, and observability that you just might find handy."
 nav:
   - Home: "index.md"
   - Start Here: "StartHere.md"
   - Learning Materials:
-    - General: "learning_materials/general.md"
-    - Python: "learning_materials/python.md"
-    - GoLang: "learning_materials/go.md"
-    - Git: "learning_materials/git.md"
-    - Ansible: "learning_materials/ansible.md"
-    - Nornir: "learning_materials/nornir.md"
+      - General: "learning_materials/general.md"
+      - Python: "learning_materials/python.md"
+      - GoLang: "learning_materials/go.md"
+      - Git: "learning_materials/git.md"
+      - Ansible: "learning_materials/ansible.md"
+      - Nornir: "learning_materials/nornir.md"
+      - Templating: "learning_materials/templating.md"
   - AutoCon Coverage:
-    - AutoCon0: "autocon_coverage/autocon0.md"
-    - AutoCon1: "autocon_coverage/autocon1.md"
+      - AutoCon0: "autocon_coverage/autocon0.md"
+      - AutoCon1: "autocon_coverage/autocon1.md"
 
-
-repo_url: https://github.com/Network-Automation-Forum/handyinfo
-repo_name: Network-Automation-Forum/handyinfo
+repo_url: "https://github.com/Network-Automation-Forum/handyinfo"
+repo_name: "Network-Automation-Forum/handyinfo"
 
 theme:
-  name: material
-  logo: img/NAF.png
-  favicon: img/favicon.png
+  name: "material"
+  logo: "img/NAF.png"
+  favicon: "img/favicon.png"
   palette:
-    - scheme: slate
-      primary: custom
-      accent: custom
+    - scheme: "slate"
+      primary: "custom"
+      accent: "custom"
   features:
-    - navigation.tracking
+    - "navigation.tracking"
 extra:
-  homepage: https://networkautomation.forum/
+  homepage: "https://networkautomation.forum/"
 extra_css:
-  - stylesheets/extra.css
+  - "stylesheets/extra.css"
+
+plugins:
+  - "include-markdown"
+
+markdown_extensions:
+  - "admonition"
+  - "pymdownx.details"
+  - "pymdownx.superfences"

@@ -1,0 +1,117 @@
+security {
+    authentication-key-chains {
+        key-chain bgp-peers {
+            description "authentication for BGP peers";
+            tolerance 3600;
+            {% for key in config['bgp']['keys'] %}
+            key {{ loop.index }} {
+                secret "{{ key['secret'] }}";
+                start-time "{{ key['start'] }}";
+                algorithm hmac-sha-1;
+                options isis-enhanced;
+            }
+            {% endfor %}
+        }
+    }
+}
+protocols {
+    bgp {
+        log-updown;
+        graceful-restart;
+        group underlay {
+            type external;
+            mtu-discovery;
+            import import-underlay;
+            family inet {
+                unicast;
+            }
+            authentication-algorithm aes-128-cmac-96;
+            export export-underlay;
+            local-as {{ config['bgp']['underlay_asn'] }};
+            multipath {
+                multiple-as;
+            }
+            bfd-liveness-detection {
+                minimum-interval 350;
+                multiplier 3;
+                session-mode single-hop;
+            }
+            authentication-key-chain bgp-peers;
+            {% for peer in config['bgp']['underlay_peers'] %}
+            neighbor {{ peer['ip'] }} {
+                description "{{ peer['name'] }}";
+                peer-as {{ peer['asn'] }};
+            }
+            {% endfor %}
+        }
+        group overlay {
+            type internal;
+            mtu-discovery;
+            vpn-apply-export;
+            local-address {{ config['router_id'] }};
+            local-as {{ config['bgp']['overlay_asn'] }} loops 2;
+            multipath;
+            family evpn {
+                signaling;
+            }
+            {% if config['device_role'] == 'Core' %}
+            cluster {{ config['bgp']['rr_cluster_id'] }};
+            {% endif %}
+            authentication-key-chain bgp-peers;
+            {% for peer in config['bgp']['overlay_peers'] %}
+            neighbor {{ peer['ip'] }} {
+                description "{{ peer['name'] }}";
+                {% if 'in_maintenance_mode' in config and config['in_maintenance_mode'] %}
+                shutdown;
+                {% endif %}
+            }
+            {% endfor %}
+        }
+    }
+}
+policy-options {
+    policy-statement export-underlay {
+        term export-underlay-loopbacks {
+            from {
+                protocol direct;
+                prefix-list-filter underlay-loopbacks orlonger;
+            }
+            then accept;
+        }
+        term export-underlay-p2p {
+            from {
+                protocol direct;
+                prefix-list-filter underlay-p2p orlonger;
+            }
+            then accept;
+        }
+    }
+    policy-statement import-underlay {
+        term import-underlay-loopbacks {
+            from {
+                prefix-list-filter underlay-loopbacks orlonger;
+            }                               
+            then accept;                    
+        }                                   
+        term import-underlay-p2p {          
+            from {                          
+                prefix-list-filter underlay-p2p orlonger;
+            }                               
+            then accept;                    
+        }                                   
+    }                                       
+    policy-statement load-balance-per-flow {
+        then {
+            load-balance per-packet;
+        }
+    }
+}
+routing-options {
+    router-id {{ config['router_id'] }};
+    autonomous-system {{ config['bgp']['overlay_asn'] }} loops 2 asdot-notation;
+    forwarding-table {
+        export load-balance-per-flow;
+        ecmp-fast-reroute;
+    }
+}
+

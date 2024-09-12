@@ -1,0 +1,302 @@
+policy-options {
+    prefix-list mgmt_hosts {
+        {% for mgmt_station in config['mgmt_hosts'] %}
+        {{ mgmt_station }};
+        {% endfor %}
+    }
+    prefix-list dns_hosts {
+        apply-path "system name-server <*>";
+    }
+    prefix-list ntp_hosts {
+        apply-path "system ntp server <*>";
+    }
+    prefix-list radius_hosts {
+        apply-path "system radius-server <*>";
+    }
+    prefix-list radius_dot1x_hosts {
+        apply-path "access radius-server <*>";
+    }
+    prefix-list snmp_clients {
+        apply-path "snmp community <*> clients <*>";
+    }
+    prefix-list bgp_hosts_brs {
+        apply-path "protocols bgp group border-routers neighbor <*>";
+    }
+    prefix-list bgp_hosts_sns {
+        apply-path "protocols bgp group service-nodes neighbor <*>";
+    }
+    prefix-list bgp_hosts_isps {
+        apply-path "protocols bgp group providers neighbor <*>";
+    }
+    prefix-list bgp_hosts_ddos {
+        apply-path "protocols bgp group Scrubbing-DDoS neighbor <*>";
+    }
+    prefix-list allowed_snmp_hosts {
+{% for prefix in config['bgp']['allowed_snmp_hosts'] %}
+        {{ prefix }};
+{% endfor %}
+    }
+    prefix-list allowed_ISP_netblocks {
+{% for prefix in config['bgp']['allowed_ISP_netblocks'] %}
+        {{ prefix }};
+{% endfor %}
+    }
+}
+firewall {
+    policer icmp-lo0-policer {
+        filter-specific;
+        if-exceeding {
+            bandwidth-limit 500k;
+            burst-size-limit 8k;
+        }
+        then discard;
+    }
+    family inet {
+        filter mgmt-traffic {
+            term from_localhost {
+                from {
+                    source-address {
+                        127.0.0.1/32;
+                        {{ config['mgmt_ip']['ip'] }}/32;
+                    }
+                }
+                then accept;
+            }
+            term from_bgp {
+                from {
+                    source-prefix-list {
+                        bgp_hosts_sns; 
+                        bgp_hosts_brs; 
+                        bgp_hosts_isps;
+                        bgp_hosts_ddos;
+                    }
+                    protocol tcp;
+                    destination-port 179;
+                }
+                then accept;
+            }
+            term to_bgp {
+                from {
+                    source-prefix-list {
+                        bgp_hosts_sns; 
+                        bgp_hosts_brs; 
+                        bgp_hosts_isps;
+                        bgp_hosts_ddos;
+                    }
+                    protocol tcp;
+                    source-port 179;
+                }
+                then accept;
+            }
+            term from_dns_hosts {
+                from {
+                    source-prefix-list {
+                        dns_hosts;
+                    }
+                    protocol udp;
+                    source-port 53;
+                }
+                then accept;
+            }
+            term from_ntp_hosts {
+                from {
+                    source-prefix-list {
+                        ntp_hosts;
+                    }
+                    protocol udp;
+                    source-port ntp;
+                }
+                then accept;
+            }
+            term from_mgmt_hosts {
+                from {
+                    source-prefix-list {
+                        mgmt_hosts;
+                    }
+                }
+                then accept;
+            }
+            term from_snmp_clients {
+                from {
+                    source-prefix-list {
+                        snmp_clients;
+                    }
+                    protocol udp;
+                    destination-port snmp;
+                }
+                then accept;
+            }
+            term from_radius_hosts {
+                from {
+                    source-prefix-list {
+                        radius_hosts;
+                    }
+                }
+                then accept;
+            }
+            term from_radius_dot1x_hosts {
+                from {
+                    source-prefix-list {
+                        radius_dot1x_hosts;
+                    }
+                }
+                then accept;
+            }                         
+            term icmp {
+                from {
+                    protocol icmp;
+                }
+                then {
+                    policer icmp-lo0-policer;
+                    accept;
+                }
+            }
+        }
+        filter isp-acls {
+            term deny_protocol_0 {
+                from {
+                    protocol 0;
+                }
+                then discard;
+            }
+            term deny_ipinip {
+                from {
+                    protocol 4;
+                }
+                then discard;
+            }
+            term deny_bogons {
+                from {
+                    source-prefix-list {
+                        bogons;
+                    }
+                }
+                then discard;
+            }
+            term allow_specific_snmp {
+                from {
+                    source-prefix-list {
+                        allowed_snmp_hosts;
+                    }
+                    protocol udp;
+                    destination-port snmp;
+                }
+                then accept;
+            }
+            term deny_other_snmp {
+                from {
+                    protocol udp;
+                    destination-prefix-list {
+                        public-ipv4-prefixes;
+                    }
+                    destination-port snmp;
+                }
+                then discard;
+            }
+            term allow_local_IPs {
+                from {
+                    destination-prefix-list {
+                        public-ipv4-prefixes;
+                    }
+                }
+                then accept;
+            }
+            term ISP_local_IPs {
+                from {
+                    destination-prefix-list {
+                        allowed_ISP_netblocks;
+                    }
+                }
+                then accept;
+            }
+            term allow_ICMP {
+                from {
+                    protocol icmp;
+                    destination-prefix-list {
+                        public-ipv4-prefixes;
+                    }
+                }
+                then accept;
+            }
+            term allow_OSPF {
+                from {
+                    protocol ospf;
+                    destination-prefix-list {
+                        public-ipv4-prefixes;
+                    }
+                }
+                then accept;
+            }
+            term allow_multicast {
+                from {
+                    destination-address {
+                        224.0.0.0/12;
+                    }
+                }
+                then accept;
+            }
+            term default_deny {
+                then discard;
+            }
+        }
+    }
+}
+interfaces {
+    lo0 {
+        unit 0 {
+            family inet {
+                filter {
+                    input mgmt-traffic;
+                }
+            }
+        }
+    }
+}
+{% if 'acls' in config %}
+{% for aclname in config['acls'] %}
+{% set acl = config['acls'][aclname] %}
+firewall {
+    family {% if acl['type'] == 'ipv4'%}inet{% elif acl['type'] == 'ipv6' %}inet6{% elif acl['type'] == 'layer2' %}ethernet-switching{% else %}invalid_acl_type{% endif %} {
+        filter {{ aclname }} {
+            {% for rule in acl['rules'] %}
+            term {% if 'description' in rule %}{{ rule['description'] }}{% else %}{{ loop.index }}{% endif %} {
+                {% if 'from' in rule or 'to' in rule or 'protocol' in rule %}
+                from {
+                    {% if 'protocol' in rule %}
+                    protocol {{ rule['protocol'] }};
+                    {% endif %}
+                    {% if 'from' in rule %}
+                    {% if 'ips' in rule['from'] %}
+                    source-address {
+                        {% for ip in rule['from']['ips'] %}
+                        {{ ip }};
+                        {% endfor %}
+                    }
+                    {% endif %}
+                    {% if 'src_ports' in rule['from'] %}
+                    source-port [ {% for port in rule['from']['src_ports'] %}{{ port }} {% endfor %}];
+                    {% endif %}
+                    {% endif %}
+                    {% if 'to' in rule %}
+                    {% if 'ips' in rule['to'] %}
+                    destination-address {
+                        {% for ip in rule['to']['ips'] %}
+                        {{ ip }};
+                        {% endfor %}
+                    }
+                    {% endif %}
+                    {% if 'dst_ports' in rule['to'] %}
+                    destination-port [ {% for port in rule['to']['dst_ports'] %}{{ port }} {% endfor %}];
+                    {% endif %}
+                    {% endif %}
+                }
+                {% endif %}
+                then {% if rule['action'] == 'allow' %}accept{% elif rule['action'] == 'deny' %}discard{% else %}{{ rule['action'] }}{% endif %};
+            }
+            {% endfor %}
+        }
+    }
+}
+{% endfor %}
+{% endif %}
+

@@ -1,0 +1,45 @@
+
+{% if 'EX2300-C' in config['device_platform'] and not 'oob' in config['mgmt_ip'] %}
+interfaces {
+    vme {
+        unit 0 {
+            family inet {
+                dhcp;
+            }
+        }
+    }
+}
+{% endif %}
+{% if 'EX3400-48P' in config['device_platform'] and not 'oob' in config['mgmt_ip'] %}
+interfaces {
+    vme {
+        unit 0 {
+            family inet {
+                dhcp;
+            }
+        }
+    }
+}
+{% endif %}
+{% if 'EX4300-48MP' in config['device_platform'] and not 'oob' in config['mgmt_ip'] %}
+interfaces {
+    vme {
+        unit 0 {
+            family inet {
+                dhcp;
+            }
+        }
+    }
+}
+{% endif %}
+{% if 'QFX5110-48S-4C' in config['device_platform'] %}
+interfaces {
+    em0 {
+        unit 0 {
+            family inet {
+                dhcp;
+            }
+        }
+    }
+}
+{% endif %}

@@ -1,0 +1,28 @@
+chassis {
+    nssu;
+    redundancy {
+        graceful-switchover;
+    }
+}
+{% if 'virtual_chassis' in config %}
+virtual-chassis {
+    preprovisioned;
+    {% if config['virtual_chassis']|length < 3 %}
+    no-split-detection;
+    {% endif %}
+    {% for member in config['virtual_chassis'] %}
+    member {{ loop.index - 1}} {
+        role {{ member['role'] }};
+        serial-number {{ member['serial'] }};
+    }
+    {% if 'alias' in member %}
+    aliases {
+        serial-number {{ member['serial'] }} {
+            alias-name {{ member['alias'] }};
+        }
+    }
+    {% endif %}
+    {% endfor %}
+}
+{% endif %}
+

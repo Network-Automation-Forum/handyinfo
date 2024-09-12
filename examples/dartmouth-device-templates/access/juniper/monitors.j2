@@ -1,0 +1,31 @@
+{% if 'monitors' in config and config['monitors']|length %}
+{% for type in config['monitors'] %}
+{% for dst in config['monitors'][type] %}
+forwarding-options {
+    analyzer {
+        monitor-{{ dst|replace('.', '_')|replace('/', '_') }} {
+            input {
+                ingress {
+                {% for src in config['monitors'][type][dst] %}
+                    interface {{ src }};
+                {% endfor %}
+                }
+                egress {
+                {% for src in config['monitors'][type][dst] %}
+                    interface {{ src }};
+                {% endfor %}
+                }
+            }
+            output {
+            {% if type == 'remote' %}
+                ip-address {{ dst }};
+            {% elif type == 'local' %}
+                interface {{ dst }};
+            {% endif %}
+            }
+        }
+    }
+}
+{% endfor %}
+{% endfor %}
+{% endif %}

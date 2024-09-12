@@ -1,0 +1,80 @@
+{% for probe_destination in config['network-static-probes'] %}
+    {% for node in config['network-static-probes'][ probe_destination ]['nodes'] %}
+event-options {
+    policy {{ probe_destination }}-{{ node }}-up {
+        events ping_test_failed;
+        within 15 {
+            trigger on 1;
+        }
+        attributes-match {
+            ping_test_failed.test-owner matches {{ config['network-static-probes'][ probe_destination ]['vrf'] }}-{{ probe_destination }};
+            ping_test_failed.test-name matches {{ probe_destination }}-{{ node }};
+        }
+        then {                          
+            change-configuration {      
+                commands {              
+                    "deactivate event-options policy {{ probe_destination }}-{{ node }}-up";
+        {% for network in config['network-static-probes'][ probe_destination ]['networks'] %}
+                    "delete routing-instances Data-Center routing-options static route {{ network }} next-hop {{ node }}";
+        {% endfor %}
+                    "activate event-options policy {{ probe_destination }}-{{ node }}-down";
+                }                       
+            }                           
+        }                               
+    }                                   
+    policy {{ probe_destination }}-{{ node }}-down {
+        events ping_test_completed;     
+        within 60 {                     
+            trigger until 2;            
+        }                               
+        attributes-match {              
+            ping_test_completed.test-owner matches {{ config['network-static-probes'][ probe_destination ]['vrf'] }}-{{ probe_destination }};
+            ping_test_completed.test-name matches {{ probe_destination }}-{{ node }};
+        }                               
+        then {                          
+            change-configuration {      
+                commands {              
+                    "deactivate event-options policy {{ probe_destination }}-{{ node }}-down";
+        {% for network in config['network-static-probes'][ probe_destination ]['networks'] %}
+                    "set routing-instances Data-Center routing-options static route {{ network }} next-hop {{ node }}";
+        {% endfor %}
+                    "activate event-options policy {{ probe_destination }}-{{ node }}-up";
+                }                       
+            }                           
+        }                               
+    }                                   
+}                                       
+services {
+    rpm {
+        probe {{ config['network-static-probes'][ probe_destination ]['vrf'] }}-{{ probe_destination }} {
+            test {{ probe_destination }}-{{ node }} {
+                target address {{ node }};
+                probe-count 3;
+                probe-interval 5;
+                test-interval 3;
+        {% for ip_addr in config['loopback_ips'] %}
+            {% if ip_addr['vrf'] == config['network-static-probes'][ probe_destination ]['vrf'] and not '::' in ip_addr['address'] %}
+                source-address {{ ip_addr['address'] }};
+            {% endif %}
+        {% endfor %}
+                routing-instance {{ config['network-static-probes'][ probe_destination ]['vrf'] }};
+                thresholds {
+                    successive-loss 3;
+                }
+            }
+        }
+    }
+}
+routing-instances {
+    {{ config['network-static-probes'][ probe_destination ]['vrf'] }} {
+        routing-options {
+            static {
+        {% for network in config['network-static-probes'][ probe_destination ]['networks'] %}
+                route {{ network }} next-hop {{ node }};
+        {% endfor %}
+            }
+        }
+    }
+}
+    {% endfor %}
+{% endfor %}

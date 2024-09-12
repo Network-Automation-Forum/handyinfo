@@ -1,0 +1,22 @@
+vlans {
+{% for vlan in config['vlans'] %}
+    {% if ('vni' in vlan and not vlan['vni'] == None and vlan['vni']) or 'basic_vlan' in vlan['tags'] %}
+    {{ vlan['name'] }} {
+        vlan-id {{ vlan['vid'] }};    
+        {% if 'vni' in vlan and vlan['vni'] %}
+        vxlan {
+            vni {{ vlan['vni'] }};
+        }
+        {% endif %}
+        {% if vlan['name'] == 'voice' %}
+        forwarding-options {
+            filter {
+                input block-cdp;
+            }
+        }
+        {% endif %}
+    }
+    {% endif %}
+{% endfor %}
+}
+

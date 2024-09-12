@@ -1,0 +1,355 @@
+policy-options {
+    prefix-list mgmt_hosts {
+        {% for mgmt_station in config['mgmt_hosts'] %}
+        {{ mgmt_station }};
+        {% endfor %}
+    }
+    prefix-list dns_hosts {
+        apply-path "system name-server <*>";
+    }
+    prefix-list ntp_hosts {
+        apply-path "system ntp server <*>";
+    }
+    prefix-list radius_hosts {
+        apply-path "system radius-server <*>";
+    }
+    prefix-list radius_dot1x_hosts {
+        apply-path "access radius-server <*>";
+    }
+    prefix-list snmp_clients {
+        apply-path "snmp community <*> clients <*>";
+    }
+}
+firewall {
+    policer icmp-lo0-policer {
+        filter-specific;
+        if-exceeding {
+            bandwidth-limit 100k;
+            burst-size-limit 8k;
+        }
+        then discard;
+    }
+    family inet {
+        filter mgmt-traffic {
+            term from_localhost {
+                from {
+                    source-address {
+                        127.0.0.1/32;
+                        {{ config['mgmt_ip']['ip'] }}/32;
+                        {% if 'primary_ip4' in config and config['primary_ip4'] is not none %}
+                        {{ config['primary_ip4'] }}/32;
+                        {% endif %}
+                        {% for address in config['addresses'] %}
+                        {{ address }}/32;
+                        {% endfor %}
+                    }
+                }
+                then accept;
+            }
+            term from_dns_hosts {
+                from {
+                    source-prefix-list {
+                        dns_hosts;
+                    }
+                }
+                then accept;
+            }
+            term from_ntp_hosts {
+                from {
+                    source-prefix-list {
+                        ntp_hosts;
+                    }
+                }
+                then accept;
+            }
+            term from_radius_hosts {
+                from {
+                    source-prefix-list {
+                        radius_hosts;
+                    }
+                }
+                then accept;
+            }
+            term from_mgmt_hosts {
+                from {
+                    source-prefix-list {
+                        mgmt_hosts;
+                    }
+                }
+                then accept;
+            }
+            term from_radius_dot1x_hosts {
+                from {
+                    source-prefix-list {
+                        radius_dot1x_hosts;
+                    }
+                }
+                then accept;
+            }
+            term from_snmp_clients {
+                from {
+                    source-prefix-list {
+                        snmp_clients;
+                    }
+                }
+                then accept;
+            }
+            term icmp {
+                from {
+                    protocol icmp;
+                }
+                then {
+                    policer icmp-lo0-policer;
+                    accept;
+                }
+            }
+            term dhcp-client-accept {               
+                from {
+                    source-address {
+                        0.0.0.0/32;
+                    }
+                    destination-address {
+                        255.255.255.255/32;
+                    }
+                    protocol udp;
+                    source-port 68;
+                    destination-port 67;
+                }
+                then {
+                    count dhcp-client-accept;
+                    accept;
+                }
+            }
+            term dhcp-server-accept {
+                from {
+                    protocol udp;
+                    source-port [ 67 68 ];
+                    destination-port [ 67 68 ];
+                }
+                then {
+                    count dhcp-server-accept;
+                    accept;
+                }
+            }
+        }
+    }
+    family ethernet-switching {
+        filter block-cdp {
+            term block-cdp {
+                from {
+                    destination-mac-address {
+                        01:00:0c:cc:cc:cc/48;
+                    }
+                }
+                then {
+                    discard;
+                }
+            }
+            term traffic-allow {
+                then accept;
+            }
+        }
+        filter block-chatter {
+            term 10 {
+                from {
+                    destination-mac-address {
+                        ff:ff:ff:ff:ff:ff/48;
+                    }
+                    destination-port 67;
+                    ip-protocol udp;
+                }
+                then accept;
+            }                               
+            term 11 {
+                from {
+                    destination-mac-address {
+                        ff:ff:ff:ff:ff:ff/48;
+                    }
+                    destination-port 68;
+                    ip-protocol udp;
+                }
+                then accept;
+            }
+            term 12 {
+                from {
+                    destination-mac-address {
+                        ff:ff:ff:ff:ff:ff/48;
+                    }
+                    ether-type arp;
+                }
+                then accept;
+            }
+            term 100 {
+                from {
+                    destination-mac-address {
+                        ff:ff:ff:ff:ff:ff/48;
+                    }
+                }
+                then {
+                    discard;
+                    count bcast-discard;
+                }
+            }
+            term 101 {
+                from {
+                    destination-mac-address {
+                        01:00:5e:00:00:fb/48;
+                    }
+                    destination-port 5353;
+                    ip-destination-address {
+                        224.0.0.251/32;
+                    }
+                    ip-protocol udp;
+                }
+                then {
+                    discard;
+                    count mdns-discard;
+                }
+            }
+            term 102 {
+                from {
+                    destination-mac-address {
+                        33:33:00:00:00:fb/48;
+                    }
+                    ether-type ipv6;
+                    destination-port 5353;
+                }
+                then {
+                    discard;
+                    count mdns-discard6;
+                }
+            }
+            term 103 {
+                from {                      
+                    destination-mac-address {
+                        01:00:5e:00:00:fc/48;
+                    }
+                    destination-port 5355;
+                    ip-destination-address {
+                        224.0.0.252/32;
+                    }
+                    ip-protocol udp;
+                }
+                then {
+                    discard;
+                    count llmnr-discard;
+                }
+            }
+            term 104 {
+                from {
+                    destination-mac-address {
+                        33:33:00:01:00:03/48;
+                    }
+                    ether-type ipv6;
+                    destination-port 5355;
+                }
+                then {
+                    discard;
+                    count llmnr-discard6;
+                }
+            }
+            term 105 {
+                from {
+                    destination-mac-address {
+                        01:00:5e:7f:ff:fa/48;
+                    }
+                    destination-port 1900;
+                    ip-destination-address {
+                        239.255.255.250/32;
+                    }
+                    ip-protocol udp;
+                }
+                then {
+                    discard;
+                    count ssdp-discard;
+                }
+            }
+            term 106 {
+                from {
+                    destination-mac-address {
+                        33:33:00:00:00:0c/48;
+                    }
+                    ether-type ipv6;
+                    destination-port 1900;
+                }
+                then {
+                    discard;
+                    count ssdp-discard6;
+                }
+            }
+            term 107 {
+                from {
+                    destination-mac-address {
+                        01:00:5e:7f:ff:fa/48;
+                    }                       
+                    destination-port 3702;
+                    ip-destination-address {
+                        239.255.255.250/32;
+                    }
+                    ip-protocol udp;
+                }
+                then {
+                    discard;
+                    count upnp-discard;
+                }
+            }
+            term 108 {
+                from {
+                    destination-mac-address {
+                        33:33:00:00:00:0c/48;
+                    }
+                    ether-type ipv6;
+                    destination-port 3702;
+                }
+                then {
+                    discard;
+                    count upnp-discard6;
+                }
+            }
+            term 109 {
+                from {
+                    destination-mac-address {
+                        ff:ff:ff:ff:ff:ff/48;
+                    }
+                    destination-port 17500;
+                    ip-protocol udp;
+                }
+                then {
+                    discard;
+                    count db-lsp-discard;
+                }
+            }
+            term 110 {
+                from {
+                    destination-mac-address {
+                        ff:ff:ff:ff:ff:ff/48;
+                    }
+                    destination-port 161;
+                    ip-protocol udp;
+                }
+                then {
+                    discard;
+                    count snmp-discard;
+                }
+            }
+            term 1000 {
+                then accept;
+            }
+        }
+    }
+{% for acl in config['acls'] %}
+    {{ acl }}
+{% endfor %}
+}
+interfaces {
+    lo0 {
+        unit 0 {
+            family inet {
+                filter {
+                    input mgmt-traffic;
+                }
+            }
+        }
+    }
+}
+
