@@ -1,0 +1,37 @@
+{% for vrf in config['vrfs'] if 'rd' in vrf and vrf['rd'] != None %}
+routing-instances {
+    {{ vrf['name'] }} {
+        forwarding-options {
+            dhcp-relay {
+                forward-only;
+                server-group {
+                    campus-dhcp-servers {
+                        {% for dhcp_server in config['dhcp_servers'] %}
+                        {{ dhcp_server }};
+                        {% endfor %}
+                    }
+                }
+                group campus {
+                    active-server-group campus-dhcp-servers;
+                    overrides {
+                        trust-option-82;
+                        {% for int in config['interfaces'] if not int['name'] in config['lacp_interfaces'] %}
+                        {% if int['enabled'] and 'vrf' in int and int['vrf'] == vrf['name'] and 'lo0' in int['name'] %}
+                        relay-source {{ int['name'] }};
+                        {% endif %}
+                        {% endfor %}
+                    }
+                    relay-option-82 {
+                        server-id-override;
+                    }
+                    {% for int in config['interfaces'] if not int['name'] in config['lacp_interfaces'] %}
+                    {% if int['enabled'] and 'vrf' in int and int['vrf'] == vrf['name'] and not 'lo0' in int['name'] %}
+                    interface {{ int['name'] }};
+                    {% endif %}
+                    {% endfor %}
+                }
+            }
+        }
+    }
+}
+{% endfor %}

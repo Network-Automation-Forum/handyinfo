@@ -1,0 +1,65 @@
+{% if 'QFX5210' in config['device_platform'] %}
+    {% if 'port_groups' in config and config['port_groups']|length %}
+chassis {
+    fpc 0 {
+        pic 0 {
+            {% for port in config['port_groups'] %}
+            port {{ port }} {
+                {% if config['port_groups'][port] == '10GE' %}
+                channel-speed 10g;
+                {% endif %}
+                {% if config['port_groups'][port] == '25GE' %}
+                channel-speed 25g;
+                {% endif %}
+                {% if config['port_groups'][port] == '40GE' %}
+                speed 40g;
+                {% endif %}
+            }
+            {% endfor %}
+        }
+    }
+}
+    {% endif %}
+{% elif 'MX204' in config['device_platform'] and 'port_groups' in config and config['port_groups']|length %}
+chassis {
+    fpc 0 {
+        {% for pic in config['port_groups'] %}
+        pic {{ pic }} {
+            {% for port in config['port_groups'][pic] %}
+            port {{ port }} {
+                {% if config['port_groups'][pic][port] == '10GE' %}
+                speed 10g;
+                {% endif %}
+                {% if config['port_groups'][pic][port] == '40GE' %}
+                speed 40g;
+                {% endif %}
+                {% if config['port_groups'][pic][port] == '100GE' %}
+                speed 100g;
+                {% endif %}
+            }
+            {% endfor %}
+        }
+        {% endfor %}
+    }
+}
+{% elif 'QFX10002' in config['device_platform'] %}
+    {% if 'port_groups' in config and config['port_groups']|length %}
+chassis {
+    fpc 0 {
+        pic 0 {
+            {% for port in config['port_groups'] %}
+            port {{ port }} {
+                {% if config['port_groups'][port] == '10GE' %}
+                channel-speed 10g;
+                {% endif %}
+                {% if config['port_groups'][port] == '100GE' %}
+                speed 100g;
+                {% endif %}
+            }
+            {% endfor %}
+        }
+    }
+}
+    {% endif %}
+{% endif %}
+

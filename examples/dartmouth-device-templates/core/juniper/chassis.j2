@@ -1,0 +1,18 @@
+{% if 'port_groups' in config and config['port_groups']|length %}
+chassis {
+    fpc 0 {
+        pic 0 {
+            {% for port in config['port_groups'] %}
+            port {{ port }} {
+                {% if config['port_groups'][port] == '10GE' %}
+                channel-speed 10g;
+                {% endif %}
+                {% if config['port_groups'][port] == '100GE' %}
+                speed 100g;
+                {% endif %}
+            }
+            {% endfor %}
+        }
+    }
+}
+{% endif %}

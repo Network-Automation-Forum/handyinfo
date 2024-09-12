@@ -1,0 +1,56 @@
+groups {
+    ezqos-voip {
+        class-of-service {
+            classifiers {
+                dscp ezqos-dscp-classifier {
+                    import default;
+                    forwarding-class ezqos-voice-fc {
+                        loss-priority low code-points 101110;
+                    }
+                    forwarding-class ezqos-control-fc {
+                        loss-priority low code-points [ 110000 011000 011010 111000 ];
+                    }
+                    forwarding-class ezqos-video-fc {
+                        loss-priority low code-points 100010;
+                    }
+                }
+            }
+            forwarding-classes {
+                class ezqos-best-effort queue-num 0;
+                class ezqos-video-fc queue-num 4;
+                class ezqos-voice-fc queue-num 5;
+                class ezqos-control-fc queue-num 7;
+            }
+            scheduler-maps {
+                ezqos-voip-sched-maps {
+                    forwarding-class ezqos-voice-fc scheduler ezqos-voice-scheduler;
+                    forwarding-class ezqos-control-fc scheduler ezqos-control-scheduler;
+                    forwarding-class ezqos-video-fc scheduler ezqos-video-scheduler;
+                    forwarding-class ezqos-best-effort scheduler ezqos-data-scheduler;
+                }
+            }
+            schedulers {
+                ezqos-voice-scheduler {
+                    buffer-size percent 20;
+                    priority strict-high;
+                }
+                ezqos-control-scheduler {
+                    buffer-size percent 10;
+                    priority strict-high;
+                }
+                ezqos-video-scheduler {
+                    transmit-rate percent 70;
+                    buffer-size percent 20;
+                    priority low;
+                }
+                ezqos-data-scheduler {
+                    transmit-rate percent 30;
+                    buffer-size percent 50;
+                    priority low;
+                }
+            }
+        }
+    }
+}
+apply-groups ezqos-voip;
+

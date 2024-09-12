@@ -1,0 +1,21 @@
+system{
+    services{
+        extension-service {
+            request-response {
+                grpc {
+                    clear-text {
+                        address {{ config['mgmt_ip']['ip'] }};
+                        port 32767;
+                    }
+                    routing-instance mgmt_junos;
+                    skip-authentication;
+                }
+            }
+            notification {
+                allow-clients {
+                    address {{ config['telemetry']['target-address'] }};
+                }
+            }
+        }
+    }
+}

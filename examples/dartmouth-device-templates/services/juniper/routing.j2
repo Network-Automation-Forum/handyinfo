@@ -1,0 +1,1850 @@
+policy-options {
+    prefix-list underlay-loopbacks {
+    {% for prefix in config['underlay_loopbacks'] %}
+        {{ prefix }};
+    {% endfor %}
+    }
+    policy-statement load-balance-per-flow {
+        then {
+            load-balance per-packet;
+        }
+    }
+    policy-statement export-underlay-loopbacks {
+        from {
+            protocol direct;
+            prefix-list-filter underlay-loopbacks orlonger;
+        }
+        then accept;
+    }
+    policy-statement import-underlay-loopbacks {
+        from {
+            prefix-list-filter underlay-loopbacks orlonger;
+        }
+        then accept;
+    }
+    policy-statement send-direct {
+        term 2 {
+            from protocol direct;
+            then accept;
+        }
+    }
+    policy-statement vrf-ibgp {
+        from {
+            protocol [ static direct bgp ];
+        }
+        then {
+             next-hop self;
+             accept;
+        }
+    }
+}
+routing-options {
+    router-id {{ config['router_id'] }};
+    forwarding-table {
+        export load-balance-per-flow;
+        ecmp-fast-reroute;
+    }
+}
+policy-options {
+    prefix-list default-ipv4-prefixes {
+{% for prefix in config['bgp']['default_ipv4_filter'] %}
+        {{ prefix }};
+{% endfor %}
+    }
+    prefix-list default-ipv6-prefixes {
+{% for prefix in config['bgp']['default_ipv6_filter'] %}
+        {{ prefix }};
+{% endfor %}
+    }
+{% for vrf in config['vrfs'] %}
+  {% if vrf['rd'] %}
+    {% if vrf['ipv4_routed_prefixes'] %}
+    prefix-list {{ vrf['name'] }}-ipv4-routed-prefixes {
+      {% for prefix in vrf['ipv4_routed_prefixes'] %}
+        {{ prefix }};
+      {% endfor %}
+      {% if vrf['strict_filtering'] == False %}
+        {% for prefix in config['bgp']['default_ipv4_filter'] %}
+        {{ prefix }};
+        {% endfor %}
+      {% endif %}
+    }
+    {% endif %}
+    {% if vrf['ipv4_other_prefixes'] %}
+    prefix-list {{ vrf['name'] }}-ipv4-other-prefixes {
+      {% for prefix in vrf['ipv4_other_prefixes'] %}
+        {{ prefix }};
+      {% endfor %}
+      {% if vrf['strict_filtering'] == False %}
+        {% for prefix in config['bgp']['default_ipv4_filter'] %}
+        {{ prefix }};
+        {% endfor %}
+      {% endif %}
+    }
+    {% endif %}
+    {% if vrf['ipv4_filtered_prefixes'] %}
+      {% for filter in vrf['ipv4_filtered_prefixes'] %}
+    prefix-list {{ vrf['name'] }}-ipv4-filtered-prefixes-{{ filter }} {
+        {% for prefix in vrf['ipv4_filtered_prefixes'][filter] %}
+        {{ prefix }};
+        {% endfor %}
+    }
+      {% endfor %}
+    {% endif %}
+    {% if vrf['ipv6_routed_prefixes'] %}
+    prefix-list {{ vrf['name'] }}-ipv6-routed-prefixes {
+      {% for prefix in vrf['ipv6_routed_prefixes'] %}
+        {{ prefix }};
+      {% endfor %}
+      {% if vrf['strict_filtering'] == False %}
+        {% for prefix in config['bgp']['default_ipv6_filter'] %}
+        {{ prefix }};
+        {% endfor %}
+      {% endif %}
+    }
+    {% endif %}
+    {% if vrf['ipv6_other_prefixes'] %}
+    prefix-list {{ vrf['name'] }}-ipv6-other-prefixes {
+      {% for prefix in vrf['ipv6_other_prefixes'] %}
+        {{ prefix }};
+      {% endfor %}
+      {% if vrf['strict_filtering'] == False %}
+        {% for prefix in config['bgp']['default_ipv6_filter'] %}
+        {{ prefix }};
+        {% endfor %}
+      {% endif %}
+    }
+    {% endif %}
+    {% if vrf['ipv6_filtered_prefixes'] %}
+      {% for prefix_filter in vrf['ipv6_filtered_prefixes'] %}
+    prefix-list {{ vrf['name'] }}-ipv6-{{ prefix_filter }} {
+         {% for prefix in vrf['ipv6_filtered_prefixes'][prefix_filter] %}
+        {{ prefix }};
+         {% endfor %}
+    }
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+    prefix-list leaked-ipv4-routed-prefixes {
+{% for vrf in config['vrfs'] %}
+  {% if vrf['leak_vrf'] %}
+    {% for prefix in vrf['ipv4_routed_prefixes'] %}
+        {{ prefix }};
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+    }
+    prefix-list leaked-ipv4-other-prefixes {
+{% for vrf in config['vrfs'] %}
+  {% if vrf['leak_vrf'] %}
+    {% for prefix in vrf['ipv4_other_prefixes'] %}
+        {{ prefix }};
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+    }
+    prefix-list leaked-ipv6-routed-prefixes {
+{% for vrf in config['vrfs'] %}
+  {% if vrf['leak_vrf'] %}
+    {% for prefix in vrf['ipv6_routed_prefixes'] %}
+        {{ prefix }};
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+    }
+    prefix-list leaked-ipv6-other-prefixes {
+{% for vrf in config['vrfs'] %}
+  {% if vrf['leak_vrf'] %}
+    {% for prefix in vrf['ipv6_other_prefixes'] %}
+        {{ prefix }};
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+    }
+}
+{##################}
+{#   self_peers   #}
+{##################}
+{# config['transit_vrf'] stores the name for our transit VRF #}
+{% for peer in config['bgp']['vrf_peers']['self_peers'] %}
+  {% if peer['vrf'] == config['transit_vrf'] %}
+   {% if peer['remote-vrf'] == config['transit_vrf'] %}
+    policy-statement {{ config['transit_vrf'] }}-vrf-from-{{ config['transit_vrf'] }} {
+        term import-networks {
+            from {
+                prefix-list-filter default-ipv4-prefixes orlonger;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ config['transit_vrf'] }}-vrf-to-{{ config['transit_vrf'] }} {
+        term import-default {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ config['transit_vrf'] }}-vrf-from-{{ config['transit_vrf'] }}-ipv6 {
+        term import-networks {
+            from {
+                prefix-list-filter default-ipv6-prefixes orlonger;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ config['transit_vrf'] }}-vrf-to-{{ config['transit_vrf'] }}-ipv6 {
+        term import-default {
+            from {
+                route-filter ::/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+}
+   {% else %}
+policy-options {
+    policy-statement {{ config['transit_vrf'] }}-vrf-from-{{ peer['remote-vrf'] }} {
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['remote-vrf'] and vrf['receive_leaks'] == True %}
+        term leaked-networks {
+            from {
+                prefix-list-filter leaked-ipv4-routed-prefixes exact;
+                prefix-list-filter leaked-ipv4-other-prefixes orlonger;
+            }
+            then reject;
+        }
+      {% endif %}
+    {% endfor %}
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['remote-vrf'] and t_vrf['ipv4_routed_prefixes'] %}
+                prefix-list-filter {{ peer['remote-vrf'] }}-ipv4-routed-prefixes exact;
+      {% endif %}
+    {% endfor %}
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['remote-vrf'] and t_vrf['ipv4_other_prefixes'] %}
+                prefix-list-filter {{ peer['remote-vrf'] }}-ipv4-other-prefixes orlonger;
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ config['transit_vrf'] }}-vrf-to-{{ peer['remote-vrf'] }} {
+        term import-default {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ config['transit_vrf'] }}-vrf-from-{{ peer['remote-vrf'] }}-ipv6 {
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['remote-vrf'] and vrf['receive_leaks'] == True %}
+        term leaked-networks {
+            from {
+                prefix-list-filter leaked-ipv6-routed-prefixes exact;
+                prefix-list-filter leaked-ipv6-other-prefixes orlonger;
+            }
+            then reject;
+        }
+      {% endif %}
+    {% endfor %}
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['remote-vrf'] and t_vrf['ipv6_routed_prefixes'] %}
+                prefix-list-filter {{ peer['remote-vrf'] }}-ipv6-routed-prefixes exact;
+      {% endif %}
+    {% endfor %}
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['remote-vrf'] and t_vrf['ipv6_other_prefixes'] %}
+                prefix-list-filter {{ peer['remote-vrf'] }}-ipv6-other-prefixes orlonger;
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ config['transit_vrf'] }}-vrf-to-{{ peer['remote-vrf'] }}-ipv6 {
+        term import-default {
+            from {
+                route-filter ::/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+}
+   {% endif %}
+  {% elif peer['remote-vrf'] == config['transit_vrf'] and peer['vrf'] != config['transit_vrf'] %}
+policy-options {
+    policy-statement {{ peer['vrf'] }}-vrf-to-{{ config['transit_vrf'] }} {
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['vrf'] and vrf['receive_leaks'] == True %}
+        term leaked-networks {
+            from {
+                prefix-list-filter leaked-ipv4-routed-prefixes exact;
+                prefix-list-filter leaked-ipv4-other-prefixes orlonger;
+            }
+            then reject;
+        }
+      {% endif %}
+    {% endfor %}
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and t_vrf['ipv4_routed_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv4-routed-prefixes exact;
+      {% endif %}
+    {% endfor %}
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and t_vrf['ipv4_other_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv4-other-prefixes orlonger;
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ peer['vrf'] }}-vrf-from-{{ config['transit_vrf'] }} {
+        term import-default {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ peer['vrf'] }}-vrf-to-{{ config['transit_vrf'] }}-ipv6 {
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['vrf'] and vrf['receive_leaks'] == True %}
+        term leaked-networks {
+            from {
+                prefix-list-filter leaked-ipv6-routed-prefixes exact;
+                prefix-list-filter leaked-ipv6-other-prefixes orlonger;
+            }
+            then reject;
+        }
+      {% endif %}
+    {% endfor %}
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and t_vrf['ipv6_routed_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv6-routed-prefixes exact;
+      {% endif %}
+    {% endfor %}
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and t_vrf['ipv6_other_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv6-other-prefixes orlonger;
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ peer['vrf'] }}-vrf-from-{{ config['transit_vrf'] }}-ipv6 {
+        term import-default {
+            from {
+                route-filter ::/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+}
+  {% else %}  {# Science-DMZ to Science-DMZ-Private #}
+policy-options {
+    policy-statement {{ peer['vrf'] }}-vrf-to-{{ peer['remote-vrf'] }} {
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['vrf'] and vrf['receive_leaks'] == True %}
+        term leaked-networks {
+            from {
+                prefix-list-filter leaked-ipv4-routed-prefixes exact;
+                prefix-list-filter leaked-ipv4-other-prefixes orlonger;
+            }
+            then reject;
+        }
+      {% endif %}
+    {% endfor %}
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and t_vrf['ipv4_routed_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv4-routed-prefixes exact;
+      {% endif %}
+    {% endfor %}
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and t_vrf['ipv4_other_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv4-other-prefixes orlonger;
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ peer['vrf'] }}-vrf-to-{{ peer['remote-vrf'] }}-ipv6 {
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['vrf'] and vrf['receive_leaks'] == True %}
+        term leaked-networks {
+            from {
+                prefix-list-filter leaked-ipv6-routed-prefixes exact;
+                prefix-list-filter leaked-ipv6-other-prefixes orlonger;
+            }
+            then reject;
+        }
+      {% endif %}
+    {% endfor %}
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and t_vrf['ipv6_routed_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv6-routed-prefixes exact;
+      {% endif %}
+    {% endfor %}
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and t_vrf['ipv6_other_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv6-other-prefixes orlonger;
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+}
+  {% endif %}
+routing-instances {                     
+    {{ peer['vrf'] }} {
+        protocols {
+            bgp {
+  {% if '::' in peer['ip'] %}
+                group self-ipv6 {
+                    type external;
+                    mtu-discovery;
+                    family inet6 {
+                        unicast;
+                        flow;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ peer['ip'] }} {
+                        description "{{ peer['remote-vrf'] }}";
+                        import {{ peer['vrf'] }}-vrf-from-{{ peer['remote-vrf'] }}-ipv6;
+                        export {{ peer['vrf'] }}-vrf-to-{{ peer['remote-vrf'] }}-ipv6;
+                        peer-as {{ config['bgp']['overlay_asn'] }}.{{ config['rds'][ peer['remote-vrf'] ] }};
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == peer['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% else %}
+                group self {
+                    type external;
+                    mtu-discovery;
+                    family inet {
+                        unicast;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ peer['ip'] }} {
+                        description "{{ peer['remote-vrf'] }}";
+                        import {{ peer['vrf'] }}-vrf-from-{{ peer['remote-vrf'] }};
+                        export {{ peer['vrf'] }}-vrf-to-{{ peer['remote-vrf'] }};
+                        peer-as {{ config['bgp']['overlay_asn'] }}.{{ config['rds'][ peer['remote-vrf'] ] }};
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == peer['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% endif %}
+            }                           
+        }                               
+    }                                   
+}
+{% endfor %}
+{###################}
+{#   isp_peers   #}
+{###################}
+{% for peer in config['bgp']['vrf_peers']['isp_peers'] %}
+ {% if 'filter' in peer %}
+   {# advertise campus supernets #}
+policy-options {
+    policy-statement {{ peer['vrf'] }}-vrf-from-sn-announce_network {
+        term announce_network {
+            from {
+                prefix-list Internet-ipv4-filtered-prefixes-announce_network;
+            }
+            then accept;
+        }
+        term default {
+            then reject;
+        }
+    }
+{#### not supporting ipv6 yet ####
+    policy-statement {{ peer['vrf'] }}-vrf-from-sn-announce_network-ipv6 {
+        term announce_network {
+            from {
+                prefix-list Internet-ipv6-filtered-prefixes-announce_network;
+            }
+            then accept;
+        }
+        term default {
+            then reject;
+        }
+    }
+#### not supporting ipv6 yet ####}
+   {# policy-statement using filter for input #}
+   {% for t_vrf in config['vrfs'] %}
+     {% if t_vrf['name'] == peer['vrf'] %}
+       {% if 'ipv4_filtered_prefixes' in t_vrf %}
+         {% for prefix_filter in t_vrf['ipv4_filtered_prefixes'] %}
+           {% if prefix_filter == peer['filter'] %}
+    policy-statement {{ peer['vrf'] }}-vrf-to-sn-{{ prefix_filter }} {
+        term import-networks {
+            from {
+             {% for prefix in t_vrf['ipv4_filtered_prefixes'][prefix_filter] %}
+                route-filter {{ prefix }} orlonger;
+             {% endfor %}
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+           {% endif %}
+         {% endfor %}
+       {% endif %}
+       {% if 'ipv6_filtered_prefixes' in t_vrf %}
+         {% for prefix_filter in t_vrf['ipv6_filtered_prefixes'] %}
+           {% if prefix_filter == peer['filter'] %}
+    policy-statement {{ peer['vrf'] }}-vrf-ipv6-to-sn-{{ prefix_filter }} {
+        term import-networks {
+            from {
+             {% for prefix in t_vrf['ipv6_filtered_prefixes'][prefix_filter] %}
+                route-filter {{ prefix }} orlonger;
+             {% endfor %}
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+           {% endif %}
+         {% endfor %}
+       {% endif %}
+     {% endif %}
+   {% endfor %}
+}
+   {# routing instance #}
+routing-instances {                     
+    {{ peer['vrf'] }} {
+        protocols {
+            bgp {
+  {% if '::' in peer['ip'] %}
+                group isps-ipv6 {
+                    type external;
+                    mtu-discovery;
+                    family inet6 {
+                        unicast;
+                        flow;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ peer['ip'] }} {
+                        description "{{ peer['name'] }}";
+                        import {{ peer['vrf'] }}-vrf-ipv6-to-sn-{{ peer['filter'] }};
+                        export {{ peer['vrf'] }}-vrf-from-sn-announce_network-ipv6;
+                        peer-as {{ peer['asn'] }};  
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == peer['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% else %}
+                group isps {
+                    type external;
+                    mtu-discovery;
+                    family inet {
+                        unicast;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ peer['ip'] }} {
+                        description "{{ peer['name'] }}";
+                        import {{ peer['vrf'] }}-vrf-to-sn-{{ peer['filter'] }};
+                        export {{ peer['vrf'] }}-vrf-from-sn-announce_network;
+                        peer-as {{ peer['asn'] }};  
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == peer['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% endif %}
+            }                           
+        }                               
+    }                                   
+}
+ {% endif %}
+{% endfor %}
+policy-options {
+    policy-statement default-deny {
+        term deny {
+            then reject;
+        }
+    }
+}
+{###################}
+{#   other_peers   #}
+{###################}
+{% for peer in config['bgp']['vrf_peers']['other_peers'] %}
+ {% if 'filter' in peer %}
+   {# advertise default route only #}
+policy-options {
+    policy-statement {{ peer['vrf'] }}-vrf-default-from-sn {
+        term import-default {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ peer['vrf'] }}-vrf-default-ipv6-from-sn {
+        term import-default {
+            from {
+                route-filter ::/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+   {# policy-statement using filter for input #}
+   {% for t_vrf in config['vrfs'] %}
+     {% if t_vrf['name'] == peer['vrf'] %}
+       {% if 'ipv4_filtered_prefixes' in t_vrf %}
+         {% for prefix_filter in t_vrf['ipv4_filtered_prefixes'] %}
+           {% if prefix_filter == peer['filter'] %}
+    policy-statement {{ peer['vrf'] }}-vrf-to-sn-{{ prefix_filter }} {
+        term import-networks {
+            from {
+             {% for prefix in t_vrf['ipv4_filtered_prefixes'][prefix_filter] %}
+                route-filter {{ prefix }} orlonger;
+             {% endfor %}
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+           {% endif %}
+         {% endfor %}
+       {% endif %}
+       {% if 'ipv6_filtered_prefixes' in t_vrf %}
+         {% for prefix_filter in t_vrf['ipv6_filtered_prefixes'] %}
+           {% if prefix_filter == peer['filter'] %}
+    policy-statement {{ peer['vrf'] }}-vrf-ipv6-to-sn-{{ prefix_filter }} {
+        term import-networks {
+            from {
+             {% for prefix in t_vrf['ipv6_filtered_prefixes'][prefix_filter] %}
+                route-filter {{ prefix }} orlonger;
+             {% endfor %}
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+           {% endif %}
+         {% endfor %}
+       {% endif %}
+     {% endif %}
+   {% endfor %}
+}
+   {# routing instance #}
+routing-instances {                     
+    {{ peer['vrf'] }} {
+        protocols {
+            bgp {
+  {% if '::' in peer['ip'] %}
+                group others-ipv6 {
+                    type external;
+                    mtu-discovery;
+                    family inet6 {
+                        unicast;
+                        flow;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ peer['ip'] }} {
+                        description "{{ peer['name'] }}";
+                        import {{ peer['vrf'] }}-vrf-ipv6-to-sn-{{ peer['filter'] }};
+                        export {{ peer['vrf'] }}-vrf-default-ipv6-from-sn;
+                        peer-as {{ peer['asn'] }};  
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == peer['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% else %}
+                group others {
+                    type external;
+                    mtu-discovery;
+                    family inet {
+                        unicast;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ peer['ip'] }} {
+                        description "{{ peer['name'] }}";
+                        import {{ peer['vrf'] }}-vrf-to-sn-{{ peer['filter'] }};
+                        export {{ peer['vrf'] }}-vrf-default-from-sn;
+                        peer-as {{ peer['asn'] }};  
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == peer['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% endif %}
+            }                           
+        }                               
+    }                                   
+}
+ {% else %}
+policy-options {
+    policy-statement {{ peer['vrf'] }}-vrf-from-sn {
+  {% for vrf in config['vrfs'] %}
+    {% if vrf['name'] == peer['vrf'] and vrf['receive_leaks'] == True %}
+        term leaked-networks {
+            from {
+                prefix-list-filter leaked-ipv4-routed-prefixes exact;
+                prefix-list-filter leaked-ipv4-other-prefixes orlonger;
+            }
+            then accept;
+        }
+    {% endif %}
+  {% endfor %}
+        term vrf-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if 'default_receive' in t_vrf and t_vrf['default_receive'] %}
+        {% if 'ipv4_routed_prefixes' in t_vrf and t_vrf['ipv4_routed_prefixes'] %}
+                prefix-list-filter {{ t_vrf['name'] }}-ipv4-routed-prefixes exact;
+        {% endif %}
+        {% if 'ipv4_other_prefixes' in t_vrf and t_vrf['ipv4_other_prefixes'] %}
+                prefix-list-filter {{ t_vrf['name'] }}-ipv4-other-prefixes orlonger;
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+    {#    add any needed route filters in addition to the default route    #}
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and 'tags' in t_vrf and t_vrf['tags'] %}
+        {% for this_tag in t_vrf['tags'] %}
+          {% for temp_vrf in config['vrfs'] %}
+            {% if 'ipv4_filtered_prefixes' in temp_vrf and temp_vrf['ipv4_filtered_prefixes'] %}
+              {% if this_tag in temp_vrf['ipv4_filtered_prefixes'] and temp_vrf['ipv4_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ temp_vrf['name'] }}-{{ this_tag }} {
+            from {
+                prefix-list-filter {{ temp_vrf['name'] }}-ipv4-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {#    end of route filters   #}
+  {% for vrf in config['vrfs'] %}
+    {% if vrf['name'] == peer['vrf'] and vrf['default_announce'] == True %}
+        term import-default {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+    {% endif %}
+  {% endfor %}
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ peer['vrf'] }}-vrf-from-sn-ipv6 {
+  {% for vrf in config['vrfs'] %}
+    {% if vrf['name'] == peer['vrf'] and vrf['receive_leaks'] == True %}
+        term leaked-networks {
+            from {
+                prefix-list-filter leaked-ipv6-routed-prefixes exact;
+                prefix-list-filter leaked-ipv6-other-prefixes orlonger;
+            }
+            then accept;
+        }
+    {% endif %}
+  {% endfor %}
+        term vrf-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if 'default_receive' in t_vrf and t_vrf['default_receive'] %}
+        {% if 'ipv6_routed_prefixes' in t_vrf and t_vrf['ipv6_routed_prefixes'] %}
+                prefix-list-filter {{ t_vrf['name'] }}-ipv6-routed-prefixes exact;
+        {% endif %}
+        {% if 'ipv6_other_prefixes' in t_vrf and t_vrf['ipv6_other_prefixes'] %}
+                prefix-list-filter {{ t_vrf['name'] }}-ipv6-other-prefixes orlonger;
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+    {#    add any needed route filters in addition to the default route    #}
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and 'tags' in t_vrf and t_vrf['tags'] %}
+        {% for this_tag in t_vrf['tags'] %}
+          {% for temp_vrf in config['vrfs'] %}
+            {% if 'ipv6_filtered_prefixes' in temp_vrf and temp_vrf['ipv6_filtered_prefixes'] %}
+              {% if this_tag in temp_vrf['ipv6_filtered_prefixes'] and temp_vrf['ipv6_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ temp_vrf['name'] }}-{{ this_tag }} {
+            from {
+                prefix-list-filter {{ temp_vrf['name'] }}-ipv6-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {#    end of route filters   #}
+  {% for vrf in config['vrfs'] %}
+    {% if vrf['name'] == peer['vrf'] and vrf['default_announce'] == True %}
+        term import-default {
+            from {
+                route-filter ::/0 exact;
+            }
+            then accept;
+        }
+    {% endif %}
+  {% endfor %}
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ peer['vrf'] }}-vrf-to-sn-unsafe {
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] %}
+        {% if 'ipv4_routed_prefixes' in t_vrf and t_vrf['ipv4_routed_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv4-routed-prefixes exact;
+        {% endif %}
+        {% if 'ipv4_other_prefixes' in t_vrf and t_vrf['ipv4_other_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv4-other-prefixes orlonger;
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+    {#    add any needed route filters in addition to the default route    #}
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['vrf'] and 'tags' in vrf and vrf['tags'] %}
+        {% for this_tag in vrf['tags'] %}
+          {% for t_vrf in config['vrfs'] %}
+            {% if 'ipv4_filtered_prefixes' in t_vrf and t_vrf['ipv4_filtered_prefixes'] %}
+              {% if this_tag in t_vrf['ipv4_filtered_prefixes'] and t_vrf['ipv4_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ t_vrf['name'] }}-{{ this_tag }} {
+            from {
+                prefix-list-filter {{ t_vrf['name'] }}-ipv4-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {#    end of route filters   #}
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ peer['vrf'] }}-vrf-to-sn-safe {
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] %}
+        {% if 'ipv4_routed_prefixes' in t_vrf and t_vrf['ipv4_routed_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv4-routed-prefixes exact;
+        {% endif %}
+        {% if 'ipv4_other_prefixes' in t_vrf and t_vrf['ipv4_other_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv4-other-prefixes orlonger;
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+    {#    add any needed route filters in addition to the default route    #}
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['vrf'] and 'tags' in vrf and vrf['tags'] %}
+        {% for this_tag in vrf['tags'] %}
+          {% for t_vrf in config['vrfs'] %}
+            {% if 'ipv4_filtered_prefixes' in t_vrf and t_vrf['ipv4_filtered_prefixes'] %}
+              {% if this_tag in t_vrf['ipv4_filtered_prefixes'] and t_vrf['ipv4_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ t_vrf['name'] }}-{{ this_tag }} {
+            from {
+                prefix-list-filter {{ t_vrf['name'] }}-ipv4-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {#    end of route filters   #}
+  {% for vrf in config['vrfs'] %}
+    {% if vrf['name'] == peer['vrf'] and vrf['default_receive'] == True %}
+        term import-default {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+    {% endif %}
+  {% endfor %}
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ peer['vrf'] }}-vrf-to-sn-ipv6-unsafe {
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] %}
+        {% if 'ipv6_routed_prefixes' in t_vrf and t_vrf['ipv6_routed_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv6-routed-prefixes exact;
+        {% endif %}
+        {% if 'ipv6_other_prefixes' in t_vrf and t_vrf['ipv6_other_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv6-other-prefixes orlonger;
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+    {#    add any needed route filters in addition to the default route    #}
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['vrf'] and 'tags' in vrf and vrf['tags'] %}
+        {% for this_tag in vrf['tags'] %}
+          {% for t_vrf in config['vrfs'] %}
+            {% if 'ipv6_filtered_prefixes' in t_vrf and t_vrf['ipv6_filtered_prefixes'] %}
+              {% if this_tag in t_vrf['ipv6_filtered_prefixes'] and t_vrf['ipv6_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ t_vrf['name'] }}-{{ this_tag }} {
+            from {
+                prefix-list-filter {{ t_vrf['name'] }}-ipv6-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {#    end of route filters   #}
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ peer['vrf'] }}-vrf-to-sn-ipv6-safe {
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] %}
+        {% if 'ipv6_routed_prefixes' in t_vrf and t_vrf['ipv6_routed_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv6-routed-prefixes exact;
+        {% endif %}
+        {% if 'ipv6_other_prefixes' in t_vrf and t_vrf['ipv6_other_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv6-other-prefixes orlonger;
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+    {#    add any needed route filters in addition to the default route    #}
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['vrf'] and 'tags' in vrf and vrf['tags'] %}
+        {% for this_tag in vrf['tags'] %}
+          {% for t_vrf in config['vrfs'] %}
+            {% if 'ipv6_filtered_prefixes' in t_vrf and t_vrf['ipv6_filtered_prefixes'] %}
+              {% if this_tag in t_vrf['ipv6_filtered_prefixes'] and t_vrf['ipv6_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ t_vrf['name'] }}-{{ this_tag }} {
+            from {
+                prefix-list-filter {{ t_vrf['name'] }}-ipv6-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {#    end of route filters   #}
+  {% for vrf in config['vrfs'] %}
+    {% if vrf['name'] == peer['vrf'] and vrf['default_receive'] == True %}
+        term import-default {
+            from {
+                route-filter ::/0 exact;
+            }
+            then accept;
+        }
+    {% endif %}
+  {% endfor %}
+        term default-deny {
+            then reject;
+        }
+    }
+}
+routing-instances {                     
+    {{ peer['vrf'] }} {
+        protocols {
+            bgp {
+  {% if '::' in peer['ip'] %}
+                group others-ipv6 {
+                    type external;
+                    mtu-discovery;
+                    family inet6 {
+                        unicast;
+                        flow;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ peer['ip'] }} {
+                        description "{{ peer['name'] }}";
+      {% if peer['trusted'] == True %}
+                        import {{ peer['vrf'] }}-vrf-to-sn-ipv6-safe;
+      {% else %}
+                        import {{ peer['vrf'] }}-vrf-to-sn-ipv6-unsafe;
+      {% endif %}
+                        export {{ peer['vrf'] }}-vrf-from-sn-ipv6;
+                        peer-as {{ peer['asn'] }};  
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == peer['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% else %}
+                group others {
+                    type external;
+                    mtu-discovery;
+                    family inet {
+                        unicast;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ peer['ip'] }} {
+                        description "{{ peer['name'] }}";
+      {% if peer['trusted'] == True %}
+                        import {{ peer['vrf'] }}-vrf-to-sn-safe;
+      {% else %}
+                        import {{ peer['vrf'] }}-vrf-to-sn-unsafe;
+      {% endif %}
+                        export {{ peer['vrf'] }}-vrf-from-sn;
+                        peer-as {{ peer['asn'] }};  
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == peer['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% endif %}
+            }                           
+        }                               
+    }                                   
+}
+ {% endif %}
+{% endfor %}
+{######################}
+{#   firewall_peers   #}
+{######################}
+{% for peer in config['bgp']['vrf_peers']['firewall_peers'] %}
+  {% if peer['vrf'] == config['transit_vrf'] %}
+policy-options {
+    policy-statement {{ config['transit_vrf'] }}-vrf-from-{{ config['transit_vrf'] }} {
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if 'default_receive' in t_vrf and t_vrf['default_receive'] %}
+        {% if 'ipv4_routed_prefixes' in t_vrf and t_vrf['ipv4_routed_prefixes'] %}
+                prefix-list-filter {{ t_vrf['name'] }}-ipv4-routed-prefixes exact;
+        {% endif %}
+        {% if 'ipv4_other_prefixes' in t_vrf and t_vrf['ipv4_other_prefixes'] %}
+                prefix-list-filter {{ t_vrf['name'] }}-ipv4-other-prefixes orlonger;
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+    {#    add any needed route filters in addition to the default route  THE_FIX    #}
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['vrf'] and 'tags' in vrf and vrf['tags'] %}
+        {% for this_tag in vrf['tags'] %}
+          {% for t_vrf in config['vrfs'] %}
+            {% if 'ipv4_filtered_prefixes' in t_vrf and t_vrf['ipv4_filtered_prefixes'] %}
+              {% if this_tag in t_vrf['ipv4_filtered_prefixes'] and t_vrf['ipv4_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ t_vrf['name'] }}-{{ this_tag }} {
+            from {
+                prefix-list-filter {{ t_vrf['name'] }}-ipv4-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {#    end of route filters   #}
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ config['transit_vrf'] }}-vrf-from-{{ config['transit_vrf'] }}-ipv6 {
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if 'default_receive' in t_vrf and t_vrf['default_receive'] %}
+        {% if 'ipv6_routed_prefixes' in t_vrf and t_vrf['ipv6_routed_prefixes'] %}
+                prefix-list-filter {{ t_vrf['name'] }}-ipv6-routed-prefixes exact;
+        {% endif %}
+        {% if 'ipv6_other_prefixes' in t_vrf and t_vrf['ipv6_other_prefixes'] %}
+                prefix-list-filter {{ t_vrf['name'] }}-ipv6-other-prefixes orlonger;
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+    {#    add any needed route filters in addition to the default route    #}
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['vrf'] and 'tags' in vrf and vrf['tags'] %}
+        {% for this_tag in vrf['tags'] %}
+          {% for t_vrf in config['vrfs'] %}
+            {% if 'ipv6_filtered_prefixes' in t_vrf and t_vrf['ipv6_filtered_prefixes'] %}
+              {% if this_tag in t_vrf['ipv6_filtered_prefixes'] and t_vrf['ipv6_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ t_vrf['name'] }}-{{ this_tag }} {
+            from {
+                prefix-list-filter {{ t_vrf['name'] }}-ipv6-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {#    end of route filters   #}
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ config['transit_vrf'] }}-vrf-to-{{ config['transit_vrf'] }} {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == config['transit_vrf'] and 'tags' in t_vrf and t_vrf['tags'] %}
+        {% for this_tag in t_vrf['tags'] %}
+          {% for temp_vrf in config['vrfs'] %}
+            {% if 'ipv4_filtered_prefixes' in temp_vrf and temp_vrf['ipv4_filtered_prefixes'] %}
+              {% if this_tag in temp_vrf['ipv4_filtered_prefixes'] and temp_vrf['ipv4_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ temp_vrf['name'] }}-{{ this_tag }} {
+            from {
+                prefix-list-filter {{ temp_vrf['name'] }}-ipv4-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+        term import-default {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ config['transit_vrf'] }}-vrf-to-{{ config['transit_vrf'] }}-ipv6 {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == config['transit_vrf'] and 'tags' in t_vrf and t_vrf['tags'] %}
+        {% for this_tag in t_vrf['tags'] %}
+          {% for temp_vrf in config['vrfs'] %}
+            {% if 'ipv6_filtered_prefixes' in temp_vrf and temp_vrf['ipv6_filtered_prefixes'] %}
+              {% if this_tag in temp_vrf['ipv6_filtered_prefixes'] and temp_vrf['ipv6_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ temp_vrf['name'] }}-{{ this_tag }} {
+            from {
+                prefix-list-filter {{ temp_vrf['name'] }}-ipv6-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+        term import-default {
+            from {
+                route-filter ::/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+}
+  {% else %}  {# Not the transit VRF #}
+policy-options {
+    policy-statement {{ peer['vrf'] }}-vrf-from-{{ config['transit_vrf'] }} {
+    {#    add any needed route filters in addition to the default route    #}
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['vrf'] and 'tags' in vrf and vrf['tags'] %}
+        {% for this_tag in vrf['tags'] %}
+          {% for t_vrf in config['vrfs'] %}
+            {% if 'ipv4_filtered_prefixes' in t_vrf and t_vrf['ipv4_filtered_prefixes'] %}
+              {% if this_tag in t_vrf['ipv4_filtered_prefixes'] and t_vrf['ipv4_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ t_vrf['name'] }}-{{ this_tag }} {
+            from {
+                prefix-list-filter {{ t_vrf['name'] }}-ipv4-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {#    end of route filters   #}
+        term import-default {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ peer['vrf'] }}-vrf-from-{{ config['transit_vrf'] }}-ipv6 {
+    {#    add any needed route filters in addition to the default route    #}
+    {% for vrf in config['vrfs'] %}
+      {% if vrf['name'] == peer['vrf'] and 'tags' in vrf and vrf['tags'] %}
+        {% for this_tag in vrf['tags'] %}
+          {% for t_vrf in config['vrfs'] %}
+            {% if 'ipv6_filtered_prefixes' in t_vrf and t_vrf['ipv6_filtered_prefixes'] %}
+              {% if this_tag in t_vrf['ipv6_filtered_prefixes'] and t_vrf['ipv6_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ t_vrf['name'] }}-{{ this_tag }} {
+            from {
+                prefix-list-filter {{ t_vrf['name'] }}-ipv6-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+    {#    end of route filters   #}
+        term import-default {
+            from {
+                route-filter ::/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ peer['vrf'] }}-vrf-to-{{ config['transit_vrf'] }} {
+  {% for vrf in config['vrfs'] %}
+    {% if vrf['name'] == peer['vrf'] and vrf['receive_leaks'] == True %}
+        term leaked-networks {
+            from {
+                prefix-list-filter leaked-ipv4-routed-prefixes exact;
+                prefix-list-filter leaked-ipv4-other-prefixes orlonger;
+            }
+            then reject;
+        }
+    {% endif %}
+  {% endfor %}
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and t_vrf['ipv4_routed_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv4-routed-prefixes exact;
+      {% endif %}
+    {% endfor %}
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and t_vrf['ipv4_other_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv4-other-prefixes orlonger;
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ peer['vrf'] }}-vrf-to-{{ config['transit_vrf'] }}-ipv6 {
+  {% for vrf in config['vrfs'] %}
+    {% if vrf['name'] == peer['vrf'] and vrf['receive_leaks'] == True %}
+        term leaked-networks {
+            from {
+                prefix-list-filter leaked-ipv6-routed-prefixes exact;
+                prefix-list-filter leaked-ipv6-other-prefixes orlonger;
+            }
+            then reject;
+        }
+    {% endif %}
+  {% endfor %}
+        term import-networks {
+            from {
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and t_vrf['ipv6_routed_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv6-routed-prefixes exact;
+      {% endif %}
+    {% endfor %}
+    {% for t_vrf in config['vrfs'] %}
+      {% if t_vrf['name'] == peer['vrf'] and t_vrf['ipv6_other_prefixes'] %}
+                prefix-list-filter {{ peer['vrf'] }}-ipv6-other-prefixes orlonger;
+      {% endif %}
+    {% endfor %}
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+}
+  {% endif %}
+routing-instances {                     
+    {{ peer['vrf'] }} {
+        protocols {
+            bgp {
+  {% if '::' in peer['ip'] %}
+                group firewall-ipv6 {
+                    type external;
+                    mtu-discovery;
+                    family inet6 {
+                        unicast;
+                        flow;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ peer['ip'] }} {
+                        description "{{ peer['name'] }}";
+                        import {{ peer['vrf'] }}-vrf-from-{{ config['transit_vrf'] }}-ipv6;
+                        export {{ peer['vrf'] }}-vrf-to-{{ config['transit_vrf'] }}-ipv6;
+                        peer-as {{ peer['asn'] }};  
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == peer['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% else %}
+                group firewall {
+                    type external;
+                    mtu-discovery;
+                    family inet {
+                        unicast;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ peer['ip'] }} {
+                        description "{{ peer['name'] }}";
+                        import {{ peer['vrf'] }}-vrf-from-{{ config['transit_vrf'] }};
+                        export {{ peer['vrf'] }}-vrf-to-{{ config['transit_vrf'] }};
+                        peer-as {{ peer['asn'] }};  
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == peer['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% endif %}
+            }                           
+        }                               
+    }                                   
+}
+{% endfor %}
+{#################}
+{#   wan_peers   #}
+{#################}
+{% for border in config['bgp']['vrf_peers']['wan_peers'] %}
+policy-options {
+    policy-statement {{ config['transit_vrf'] }}-vrf-from-border {
+  {% for vrf in config['vrfs'] %}
+    {% if vrf['name'] == config['transit_vrf'] %}
+    {#    add any needed route filters in addition to the default route    #}
+      {% if 'tags' in vrf and vrf['tags'] %}
+        {% for this_tag in vrf['tags'] %}
+          {% for t_vrf in config['vrfs'] %}
+            {% if 'ipv4_filtered_prefixes' in t_vrf and t_vrf['ipv4_filtered_prefixes'] %}
+              {% if this_tag in t_vrf['ipv4_filtered_prefixes'] and t_vrf['ipv4_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ t_vrf['name'] }}-{{ this_tag }} {
+            from {
+                protocol bgp;
+                prefix-list-filter {{ t_vrf['name'] }}-ipv4-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {#    end of route filters   #}
+    {% endif %}
+  {% endfor %}
+        term import-default {
+            from {
+                protocol bgp;
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ config['transit_vrf'] }}-vrf-from-border-ipv6 {
+  {% for vrf in config['vrfs'] %}
+    {% if vrf['name'] == config['transit_vrf'] %}
+    {#    add any needed route filters in addition to the default route    #}
+      {% if 'tags' in vrf and vrf['tags'] %}
+        {% for this_tag in vrf['tags'] %}
+          {% for t_vrf in config['vrfs'] %}
+            {% if 'ipv6_filtered_prefixes' in t_vrf and t_vrf['ipv6_filtered_prefixes'] %}
+              {% if this_tag in t_vrf['ipv6_filtered_prefixes'] and t_vrf['ipv6_filtered_prefixes'][this_tag] %}
+        term import-tags-{{ t_vrf['name'] }}-{{ this_tag }} {
+            from {
+                protocol bgp;
+                prefix-list-filter {{ t_vrf['name'] }}-ipv6-filtered-prefixes-{{ this_tag }} orlonger;
+            }
+            then accept;
+        }
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {#    end of route filters   #}
+    {% endif %}
+  {% endfor %}
+        term import-default {
+            from {
+                protocol bgp;
+                route-filter ::/0 exact;
+            }
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ config['transit_vrf'] }}-vrf-to-border {
+  {% for vrf in config['vrfs'] %}
+    {% if vrf['rd'] %}
+        term {{ vrf['name'] }}-networks {
+            from {
+      {% if vrf['ipv4_routed_prefixes'] or vrf['strict_filtering'] == False %}
+                prefix-list-filter {{ vrf['name'] }}-ipv4-routed-prefixes exact;
+      {% endif %}
+      {% if vrf['ipv4_other_prefixes'] or vrf['strict_filtering'] == False %}
+                prefix-list-filter {{ vrf['name'] }}-ipv4-other-prefixes orlonger;
+      {% endif %}
+      {#    add any needed route filters in addition to the default route    #}
+      {% if vrf['name'] == config['transit_vrf'] %}
+        {% if 'ipv4_filtered_prefixes' in vrf and vrf['ipv4_filtered_prefixes'] %}
+          {% for this_filter in vrf['ipv4_filtered_prefixes'] %}
+            {% if not "WAN" in this_filter and not "announce_" in this_filter %}
+                prefix-list-filter {{ vrf['name'] }}-ipv4-filtered-prefixes-{{ this_filter }} orlonger;
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endif %}
+      {#    end of route filters   #}
+            }
+            then accept;
+        }
+    {% endif %}
+  {% endfor %}
+        term default-deny {
+            then reject;
+        }
+    }
+    policy-statement {{ config['transit_vrf'] }}-vrf-to-border-ipv6 {
+  {% for vrf in config['vrfs'] %}
+    {% if vrf['rd'] %}
+        term {{ vrf['name'] }}-networks {
+            from {
+      {% if vrf['ipv6_routed_prefixes'] or vrf['strict_filtering'] == False %}
+                prefix-list-filter {{ vrf['name'] }}-ipv6-routed-prefixes exact;
+      {% endif %}
+      {% if vrf['ipv6_other_prefixes'] or vrf['strict_filtering'] == False %}
+                prefix-list-filter {{ vrf['name'] }}-ipv6-other-prefixes orlonger;
+      {% endif %}
+            }
+            then accept;
+        }
+    {% endif %}
+  {% endfor %}
+        term default-deny {
+            then reject;
+        }
+    }
+}
+routing-instances {                     
+    {{ config['transit_vrf'] }} {
+        protocols {
+            bgp {
+  {% if '::' in border['ip'] %}
+                group internet-ipv6 {
+                    type external;
+                    mtu-discovery;
+                    family inet6 {
+                        unicast;
+                        flow;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ border['ip'] }} {
+                        description "{{ border['name'] }}";
+                        import {{ config['transit_vrf'] }}-vrf-from-border-ipv6;
+                        export {{ config['transit_vrf'] }}-vrf-to-border-ipv6;
+                        peer-as {{ border['asn'] }};  
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == border['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% else %}
+                group internet {
+                    type external;
+                    mtu-discovery;
+                    family inet {
+                        unicast;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ border['ip'] }} {
+                        description "{{ border['name'] }}";
+                        import {{ config['transit_vrf'] }}-vrf-from-border;
+                        export {{ config['transit_vrf'] }}-vrf-to-border;
+                        peer-as {{ border['asn'] }};  
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == border['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% endif %}
+            }                           
+        }                               
+    }                                   
+}
+{% endfor %}
+{##################}
+{#   ibgp_peers   #}
+{##################}
+{% for neighbor in config['bgp']['vrf_peers']['ibgp_peers'] %}
+routing-instances {                     
+    {{ config['transit_vrf'] }} {
+        protocols {
+            bgp {
+  {% if '::' in neighbor['ip'] %}
+                group ibgp-ipv6 {
+                    type internal;
+                    mtu-discovery;
+                    family inet6 {
+                        unicast;
+                        flow;
+                    }
+                    export send-direct;
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ neighbor['ip'] }} {
+                        description "{{ neighbor['name'] }}";
+                        peer-as {{ config['bgp']['overlay_asn'] }}.{{ config['rds'][ config['transit_vrf'] ] }};
+                        export vrf-ibgp;
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == neighbor['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% else %}
+                group ibgp {
+                    type internal;
+                    mtu-discovery;
+                    family inet {
+                        unicast;
+                    }
+                    export send-direct;
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ neighbor['ip'] }} {
+                        description "{{ neighbor['name'] }}";
+                        peer-as {{ config['bgp']['overlay_asn'] }}.{{ config['rds'][ config['transit_vrf'] ] }};
+                        export vrf-ibgp;
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == neighbor['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% endif %}
+            }                           
+        }                               
+    }                                   
+}
+{% endfor %}
+{##################}
+{#   dns_peers   #}
+{##################}
+{% if 'dns_peers' in config['bgp']['vrf_peers'] %}
+ {% for neighbor in config['bgp']['vrf_peers']['dns_peers'] %}
+routing-instances {                     
+    {{ neighbor['vrf'] }} {
+        protocols {
+            bgp {
+  {% if '::' in neighbor['ip'] %}
+                group dns-ipv6 {
+                    type external;
+                    mtu-discovery;
+                    family inet6 {
+                        unicast;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ neighbor['ip'] }} {
+                        description "{{ neighbor['name'] }}";
+                        peer-as {{ neighbor['asn'] }};
+                        export default-deny;
+                        import {{ config['bgp']['vrf_peers']['dns_peers'][0]['vrf'] }}-vrf-from-dns
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == neighbor['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% else %}
+                group dns {
+                    type external;
+                    mtu-discovery;
+                    family inet {
+                        unicast;
+                    }
+                    bfd-liveness-detection {
+                        minimum-interval 350;
+                        multiplier 3;
+                        session-mode single-hop;
+                    }
+                    neighbor {{ neighbor['ip'] }} {
+                        description "{{ neighbor['name'] }}";
+                        peer-as {{ neighbor['asn'] }};
+                        export default-deny;
+                        import {{ config['bgp']['vrf_peers']['dns_peers'][0]['vrf'] }}-vrf-from-dns
+                    {% for auth_peer in config['bgp']['auth'] %}
+                      {% if auth_peer['ip'] == neighbor['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                      {% endif %}
+                    {% endfor %}
+                    }                   
+                }                       
+  {% endif %}
+            }                           
+        }                               
+    }                                   
+}
+policy-options {
+    prefix-list bgp_hosts_{{ neighbor['vrf'] }}_dns {
+        apply-path "routing-instances {{ neighbor['vrf'] }} protocols bgp group dns neighbor <*>";
+    }
+}
+firewall {
+    family inet {
+        filter mgmt-traffic {
+            term from_bgp {
+                from {
+                    source-prefix-list {
+                        bgp_hosts_{{ neighbor['vrf'] }}_dns;
+                    }
+                }
+            }
+            term to_bgp {
+                from {
+                    source-prefix-list {
+                        bgp_hosts_{{ neighbor['vrf'] }}_dns;
+                    }
+                }
+            }
+        }
+    }
+}
+{% endfor %}
+policy-options {
+    policy-statement {{ config['bgp']['vrf_peers']['dns_peers'][0]['vrf'] }}-vrf-from-dns {
+        term anycast {
+            from {
+{% for prefix in config['dns-anycast'] %}
+                route-filter {{ prefix }}/32 exact;
+{% endfor %}
+            }
+            then accept;
+        }
+        term deny-default {
+            then reject;
+        }
+    }
+}           
+{% endif %}

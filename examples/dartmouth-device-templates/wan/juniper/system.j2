@@ -1,0 +1,196 @@
+system {
+    host-name {{ config['hostname']|replace(config['dns']['network-device-domainname'], '') }};
+    domain-name {{ config['dns']['network-device-domainname'] }};
+    no-multicast-echo;
+    time-zone {{ config['ntp']['timezone'] }};
+    management-instance;
+    root-authentication {
+        encrypted-password {{ config['root']['password'] }};
+    }
+    name-server {
+        {% for server in config['dns']['servers'] %}
+        {{ server }} routing-instance mgmt_junos;
+        {% endfor %}
+    }
+    login {
+        class view-all {
+            permissions [ access admin clear firewall interface network routing secret security snmp system trace view view-configuration ];
+            allow-commands "^show";
+        }
+        {% for user in config['users'] %}
+        {% set user_key = 'users' %}
+        {% include 'shared-users.j2' %}
+        {% endfor %}
+        {% if 'additional_users' in config %}
+        {% for user in config['additional_users'] %}
+        {% set user_key = 'additional_users' %}
+        {% include 'shared-users.j2' %}
+        {% endfor %}
+        {% endif %}
+    }
+    arp {
+        gratuitous-arp-delay 5;
+        gratuitous-arp-on-ifup;
+        purging;
+        aging-timer 20;
+    }
+    no-redirects;
+    no-redirects-ipv6;
+    no-multicast-echo;
+    no-ping-record-route;               
+    no-ping-time-stamp;                 
+    internet-options {
+        no-source-quench;               
+        tcp-drop-synfin-set;            
+        no-tcp-reset drop-all-tcp;      
+    }
+    services {
+        ssh {
+            root-login deny;
+            no-tcp-forwarding;
+            protocol-version v2;
+            client-alive-count-max 3;
+            client-alive-interval 15;
+            hostkey-algorithm {
+                ssh-rsa;
+            }
+        }
+        netconf {
+            ssh;
+        }
+    }
+    syslog {
+        allow-duplicates;
+        user * {
+            any emergency;
+        }
+        time-format year millisecond;
+        {% for server in config['syslog']['servers'] %}
+        host {{ server }} {
+            any info;
+            {% if "facility" in config['syslog'] %}
+            facility-override {{ config['syslog']['facility'] }};
+            {% else %}
+            facility-override local4;
+            {% endif %}
+            log-prefix {{ config["hostname"]|replace(config['dns']['network-device-domainname'], "") }};
+            source-address {{ config['mgmt_ip']['ip'] }};
+            structured-data;
+            match "!(.*{{ config['syslog']['messages_ignore']|join('.*|.*') }}.*)";
+        }
+        {% endfor %}
+        file messages {
+            any info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+        {% if "tags" in config %}
+        {% for tag in config['tags'] %}
+        {% for k,v in tag.items() %}
+        {% if k == "syslog_all" and v == true %}
+        file messages-all {
+            any any;
+            allow-duplicates;
+        }
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+        {% endif %}
+    }
+    ntp {
+        {% for server in config['ntp']['servers'] %}
+        server {{ server }} routing-instance mgmt_junos;
+        {% endfor %}
+        source-address {{ config['mgmt_ip']['ip'] }} routing-instance mgmt_junos;
+    }
+}
+forwarding-options {
+    storm-control-profiles default {
+        all;
+    }
+}
+interfaces {
+    {% set mgmt_ip = config['mgmt_ip'] %}
+    {% if 'vlan' in mgmt_ip %}
+    irb.{{ mgmt_ip['vlan'] }} {
+        family inet {
+            address {{ mgmt_ip['ip'] }}/{{ mgmt_ip['mask'] }};
+        }
+    }
+    {% endif %}
+    {% if 'oob-fiber' in mgmt_ip %}  {# start block1 #}
+     {% if 'virtual_chassis' in config %}
+    vme {
+     {% else %}
+    em1 {
+     {% endif %}
+        unit 0 {
+            family inet {
+                filter {
+                    input mgmt-traffic;
+                }
+                address {{ mgmt_ip['ip'] }}/{{ mgmt_ip['mask'] }};
+            }
+        }
+    }
+    {% elif 'oob' in mgmt_ip %}
+     {% if 'virtual_chassis' in config %}
+    vme {
+     {% elif 'MX204' in config['device_platform'] %}
+    fxp0 {
+     {% else %}
+    em0 {
+     {% endif %}
+        unit 0 {
+            family inet {
+                filter {
+                    input mgmt-traffic;
+                }
+                address {{ mgmt_ip['ip'] }}/{{ mgmt_ip['mask'] }};
+            }
+        }
+    }
+    {% endif %}  {# end block1 #}
+    {% if 'physical' in mgmt_ip %}
+    {{ mgmt_ip['physical'] }} {
+        unit 0 {
+            family inet {
+                address {{ mgmt_ip['ip'] }}/{{ mgmt_ip['mask'] }};
+            }
+        }
+    }
+    {% endif %}
+}
+    {% if 'oob' in mgmt_ip or 'oob-fiber' in mgmt_ip %}
+    {% if 'virtual_chassis' in config %}
+    {% else %}
+routing-instances {
+    mgmt_junos {
+        routing-options {
+            static {
+                route 0.0.0.0/0 next-hop {{ config['mgmt_ip']['default_gateway'] }};
+            }
+        }
+    }
+}
+    {% endif %}
+    {% endif %}
+{% if 'vlan' in mgmt_ip %}
+vlans {
+    {% for vlan in config['vlans'] %}{% if vlan['id'] == mgmt_ip['vlan'] %}
+    {{ vlan['name'] }}{% endif %}{% endfor %} {
+        l3-interface irb.{{ mgmt_ip['vlan'] }};
+    }
+}
+{% endif %}
+protocols {
+    lldp {
+        vlan-name-tlv-option vlan-id;
+        port-id-subtype interface-name;
+        interface all;
+    }
+    lldp-med {
+        interface all;
+    }
+}
