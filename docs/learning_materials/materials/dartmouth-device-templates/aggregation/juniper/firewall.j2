@@ -1,0 +1,131 @@
+policy-options {
+    prefix-list mgmt_hosts {
+        {% for mgmt_station in config['mgmt_hosts'] %}
+        {{ mgmt_station }};
+        {% endfor %}
+    }
+    prefix-list dns_hosts {
+        apply-path "system name-server <*>";
+    }
+    prefix-list ntp_hosts {
+        apply-path "system ntp server <*>";
+    }
+    prefix-list radius_hosts {
+        apply-path "system radius-server <*>";
+    }
+    prefix-list radius_dot1x_hosts {
+        apply-path "access radius-server <*>";
+    }
+    prefix-list snmp_clients {
+        apply-path "snmp community <*> clients <*>";
+    }
+}
+firewall {
+    policer icmp-lo0-policer {
+        filter-specific;
+        if-exceeding {
+            bandwidth-limit 100k;
+            burst-size-limit 8k;
+        }
+        then discard;
+    }
+    family inet {
+        filter mgmt-traffic {
+            term from_localhost {
+                from {
+                    source-address {
+                        127.0.0.1/32;
+                        {{ config['mgmt_ip']['ip'] }}/32;
+                    }
+                }
+                then accept;
+            }
+            term from_dns_hosts {
+                from {
+                    source-prefix-list {
+                        dns_hosts;
+                    }
+                }
+                then accept;
+            }
+            term from_ntp_hosts {
+                from {
+                    source-prefix-list {
+                        ntp_hosts;
+                    }
+                }
+                then accept;
+            }
+            term from_radius_hosts {
+                from {
+                    source-prefix-list {
+                        radius_hosts;
+                    }
+                }
+                then accept;
+            }
+            term from_mgmt_hosts {
+                from {
+                    source-prefix-list {
+                        mgmt_hosts;
+                    }
+                }
+                then accept;
+            }
+            term from_radius_dot1x_hosts {
+                from {
+                    source-prefix-list {
+                        radius_dot1x_hosts;
+                    }
+                }
+                then accept;
+            }
+            term from_snmp_clients {
+                from {
+                    source-prefix-list {
+                        snmp_clients;
+                    }
+                }
+                then accept;
+            }
+            term icmp {
+                from {
+                    protocol icmp;
+                }
+                then {
+                    policer icmp-lo0-policer;
+                    accept;
+                }
+            }
+        }
+    }
+    family ethernet-switching {
+        filter block-cdp {
+            term block-cdp {
+                from {
+                    destination-mac-address {
+                        01:00:0c:cc:cc:cc/48;
+                    }
+                }
+                then {
+                    discard;
+                }
+            }
+            term traffic-allow {
+                then accept;
+            }
+        }
+    }
+}
+interfaces {
+    lo0 {
+        unit 0 {
+            family inet {
+                filter {
+                    input mgmt-traffic;
+                }
+            }
+        }
+    }
+}
+

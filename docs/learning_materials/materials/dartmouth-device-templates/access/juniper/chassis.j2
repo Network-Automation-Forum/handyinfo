@@ -1,0 +1,55 @@
+chassis {
+    nssu;
+    redundancy {
+        graceful-switchover;
+    }
+    alarm {
+        management-ethernet {
+            link-down ignore;
+        }
+    }
+}
+{% if 'virtual_chassis' in config and config['virtual_chassis'] is not none %}
+virtual-chassis {
+    preprovisioned;
+    {% if config['virtual_chassis']|length < 3 %}
+    no-split-detection;
+    {% endif %}
+    {% for member in config['virtual_chassis'] %}
+    member {{ loop.index - 1}} {
+        role {{ member['role'] }};
+        serial-number {{ member['serial'] }};
+    }
+    {% if 'alias' in member %}
+    aliases {
+        serial-number {{ member['serial'] }} {
+            alias-name {{ member['alias'] }};
+        }
+    }
+    {% endif %}
+    {% endfor %}
+}
+{% endif %}
+{% if 'QFX5210' in config['device_platform'] or 'QFX5120' in config['device_platform'] %}
+    {% if 'port_groups' in config and config['port_groups']|length %}
+chassis {
+    fpc 0 {
+        pic 0 {
+            {% for port in config['port_groups'] %}
+            port {{ port }} {
+                {% if config['port_groups'][port] == '10GE' %}
+                channel-speed 10g;
+                {% endif %}
+                {% if config['port_groups'][port] == '25GE' %}
+                channel-speed 25g;
+                {% endif %}
+                {% if config['port_groups'][port] == '40GE' %}
+                speed 40g;
+                {% endif %}
+            }
+            {% endfor %}
+        }
+    }
+}
+    {% endif %}
+{% endif %}

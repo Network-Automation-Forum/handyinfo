@@ -7,6 +7,7 @@
 * [Git](learning_materials/git.md) Version Control
 * [Ansible](learning_materials/ansible.md) Automation Framework
 * [Nornir](learning_materials/nornir.md) Automation Framework
+* [Jinja](learning_materials/templating.md) Templating Engine
 * [Autonomicon](https://autonomicon.networkautomation.forum/) - We're building out a lexicon / glossary for "standard" and/or common network automation terms and concepts...
 * More needed here...
 

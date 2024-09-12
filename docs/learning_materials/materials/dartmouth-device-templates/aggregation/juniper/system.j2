@@ -1,0 +1,18 @@
+protocols {
+    igmp-snooping {
+        vlan default;
+        {% for vlan in config['vlans'] %}
+        {% if 'igmpsnooping' in vlan['tags'] and vlan['tags']['igmpsnooping'] == True %}
+        vlan {{ vlan['name'] }};
+        {% endif %}
+        {% endfor %}
+    }
+    layer2-control {
+        nonstop-bridging;
+    }
+}
+{% if 'System_MAC_Limit' in config['custom_fields'] and config['custom_fields']['System_MAC_Limit'] > 0 %}
+switch-options {
+    interface-mac-limit {{ config['custom_fields']['System_MAC_Limit'] }} packet-action drop-and-log;
+}
+{% endif %}

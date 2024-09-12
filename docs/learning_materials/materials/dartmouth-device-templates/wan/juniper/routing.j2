@@ -1,0 +1,753 @@
+policy-options {
+    policy-statement load-balance-per-flow {
+        then {
+            load-balance per-packet;
+        }
+    }
+    policy-statement redist-ipv6 {
+        from protocol [ static direct bgp ];
+        then accept;
+    }
+}
+routing-options {
+    rib inet6.0 {
+        static {
+            route ::/0 discard;
+        {% for this_prefix in config['network_announcements']['announce_network'] %}
+          {% if this_prefix['children'] > 0 and this_prefix['family'] == "IPv6" %}
+            route {{ this_prefix['network'] }} discard preference 180;
+          {% endif %}
+        {% endfor %}
+        }
+    }
+    static {
+    {% for this_prefix in config['network_announcements']['announce_network'] %}
+      {% if this_prefix['children'] > 0 and this_prefix['family'] == "IPv4" %}
+        route {{ this_prefix['network'] }} discard preference 180;
+      {% endif %}
+    {% endfor %}
+    }
+    forwarding-table {
+        export load-balance-per-flow;
+        ecmp-fast-reroute;
+    }
+    router-id {{ config['router_id'] }};
+}
+policy-options {
+    prefix-list default-ipv4-prefixes {
+{% for prefix in config['bgp']['default_ipv4_filter'] %}
+        {{ prefix }};
+{% endfor %}
+    }
+    prefix-list default-ipv6-prefixes {
+{% for prefix in config['bgp']['default_ipv6_filter'] %}
+        {{ prefix }};
+{% endfor %}
+    }
+    prefix-list announce-ipv4-prefixes {
+{% for this_prefix in config['network_announcements']['announce_wan_network'] %}
+    {% if this_prefix['family'] == "IPv4" %}
+        {{ this_prefix['network'] }};
+    {% endif %}
+{% endfor %}
+    }
+    prefix-list announce-ipv6-prefixes {
+{% for this_prefix in config['network_announcements']['announce_wan_network'] %}
+    {% if this_prefix['family'] == "IPv6" %}
+        {{ this_prefix['network'] }};
+    {% endif %}
+{% endfor %}
+    }
+    prefix-list public-ipv4-prefixes {
+{% for prefix in config['bgp']['public_ipv4_filter'] %}
+        {{ prefix }};
+{% endfor %}
+    }
+    prefix-list public-ipv6-prefixes {
+{% for prefix in config['bgp']['public_ipv6_filter'] %}
+        {{ prefix }};
+{% endfor %}
+    }
+    prefix-list bogons {
+{% for prefix in config['bgp']['bogons'] %}
+        {{ prefix }};
+{% endfor %}
+    }
+    prefix-list bogons_ipv6 {
+{% for prefix in config['bgp']['bogons_ipv6'] %}
+        {{ prefix }};
+{% endfor %}
+    }
+    {% if config.ddos_filters.ddos_ipv4_filter | length > 0 %}
+    prefix-list ddos_ipv4_filter {
+        {% for prefix in config.ddos_filters.ddos_ipv4_filter %}
+        {{ prefix }};
+        {% endfor %}
+    }
+    policy-statement Scrubbing-DDoS {
+        term Target-Network {
+            from {
+                prefix-list-filter ddos_ipv4_filter exact;
+            }
+            then {
+        {% set processed_communities = {} %}
+        {% for provider in config.bgp.wan_peers.ddos %}
+            {% for community in provider.communities %}
+                {% if community not in processed_communities %}
+                    {% set _ = processed_communities.update({community: True}) %}
+                  community Scrubbing-{{ community.split(':')[-1] }}-VRF;
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+                accept;
+            }
+        }
+        term else {
+            then reject;
+        }
+    }
+    {% else %}
+    policy-statement Scrubbing-DDoS {
+        term else {
+            then reject;
+        }
+    }
+    {% endif %}
+    {% if config.ddos_filters.ddos_ipv6_filter | length > 0 %}
+    prefix-list ddos_ipv6_filter {
+        {% for prefix in config.ddos_filters.ddos_ipv6_filter %}
+        {{ prefix }};
+        {% endfor %}
+    }
+    policy-statement Scrubbing-DDoS-ipv6 {
+        term Target-Network {
+            from {
+                prefix-list-filter ddos_ipv6_filter exact;
+            }
+            then {
+        {% set processed_communities = {} %}
+        {% for provider in config.bgp.wan_peers.ddos %}
+            {% for community in provider.communities %}
+                {% if community not in processed_communities %}
+                    {% set _ = processed_communities.update({community: True}) %}
+                community add Scrubbing-{{ community.split(':')[-1] }}-VRF;
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+                accept;
+            }
+        }
+        term else {
+            then reject;
+        }
+    }
+    {% else %}
+    policy-statement Scrubbing-DDoS-ipv6 {
+        term else {
+            then reject;
+        }
+    }
+    {% endif %}
+    policy-statement accept_all {
+        term accept_all {
+            then accept;
+        }
+    }
+    policy-statement to_service_node {
+        term default_route {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+        term default_deny {
+            then reject;
+        }
+    }
+    policy-statement to_service_node_ipv6 {
+        term default_route {
+            from {
+                route-filter ::/0 exact;
+            }
+            then accept;
+        }
+        term default_deny {
+            then reject;
+        }
+    }
+    policy-statement from_service_node {
+        term Campus {
+            from {
+                prefix-list-filter default-ipv4-prefixes orlonger;
+            }
+            then accept;
+        }
+        term default_deny {
+            then reject;
+        }
+    }
+    policy-statement from_service_node_ipv6 {
+        term Campus {
+            from {
+                prefix-list-filter default-ipv6-prefixes orlonger;
+            }
+            then accept;
+        }
+        term default_deny {
+            then reject;
+        }
+    }
+    policy-statement to_provider {
+        term Campus {
+            from {
+                prefix-list announce-ipv4-prefixes;
+            }
+            then accept;
+        }
+        term default_deny {
+            then reject;
+        }
+    }
+    policy-statement to_provider_ipv6 {
+        term Campus {
+            from {
+                prefix-list announce-ipv6-prefixes;
+            }
+            then accept;
+        }
+        term default_deny {
+            then reject;
+        }
+    }
+    policy-statement from_provider_reject_default {
+        term No_Bogons {
+            from {
+                prefix-list-filter bogons orlonger;
+            }
+            then reject;
+        }
+        term No_Spoofing {
+            from {
+                prefix-list-filter public-ipv4-prefixes orlonger;
+            }
+            then reject;
+        }
+        term No_Default {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then reject;
+        }
+        term default_accept {
+            then accept;
+        }
+    }
+    policy-statement from_provider_reject_default_ipv6 {
+        term No_Bogons {
+            from {
+                prefix-list-filter bogons_ipv6 orlonger;
+            }
+            then reject;
+        }
+        term No_Spoofing {
+            from {
+                prefix-list-filter public-ipv6-prefixes orlonger;
+            }
+            then reject;
+        }
+        term No_Default {
+            from {
+                route-filter ::/0 exact;
+            }
+            then reject;
+        }
+        term default_accept {
+            then accept;
+        }
+    }
+    policy-statement from_provider_accept_default {
+        term No_Bogons {
+            from {
+                prefix-list-filter bogons orlonger;
+            }
+            then reject;
+        }
+        term No_Spoofing {
+            from {
+                prefix-list-filter public-ipv4-prefixes orlonger;
+            }
+            then reject;
+        }
+        term default_accept {
+            then accept;
+        }
+    }
+    policy-statement from_provider_accept_default_ipv6 {
+        term No_Bogons {
+            from {
+                prefix-list-filter bogons_ipv6 orlonger;
+            }
+            then reject;
+        }
+        term No_Spoofing {
+            from {
+                prefix-list-filter public-ipv6-prefixes orlonger;
+            }
+            then reject;
+        }
+        term default_accept {
+            then accept;
+        }
+    }
+    policy-statement from_provider_accept_only_default {
+        term Default_Only {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+        term default_reject {
+            then reject;
+        }
+    }
+    policy-statement from_provider_accept_only_default_ipv6 {
+        term Default_Only {
+            from {
+                route-filter ::/0 exact;
+            }
+            then accept;
+        }
+        term default_reject {
+            then reject;
+        }
+    }
+    policy-statement send-direct {
+        term 2 {
+            from protocol direct;
+            then accept;
+        }
+    }
+    policy-statement vrf-ibgp {
+        from {
+            protocol [ static direct bgp ];
+        }
+        then {
+             next-hop self;
+             accept;
+        }
+    }
+    policy-statement deny-all {
+        term else {
+            then reject;
+        }
+    }
+{% set processed_local_prefs = {} %}
+{% for provider in config.bgp.wan_peers.providers %}
+    {% if provider.local_pref not in processed_local_prefs and provider.local_pref is not none %}
+        {% set _ = processed_local_prefs.update({provider.local_pref: True}) %}
+    policy-statement from_provider_reject_default_ipv6_local_pref_{{ provider.local_pref }} {
+        term No_Bogons {
+            from {
+                prefix-list-filter bogons_ipv6 orlonger;
+            }
+            then reject;
+        }
+        term No_Spoofing {
+            from {
+                prefix-list-filter public-ipv6-prefixes orlonger;
+            }
+            then reject;
+        }
+        term No_Default {
+            from {
+                route-filter ::/0 exact;
+            }
+            then reject;
+        }
+        term default_accept {
+            then {
+                local-preference {{ provider.local_pref }};
+                accept;
+            }
+        }
+    }
+    policy-statement from_provider_reject_default_local_pref_{{ provider.local_pref }} {
+        term No_Bogons {
+            from {
+                prefix-list-filter bogons orlonger;
+            }
+            then reject;
+        }
+        term No_Spoofing {
+            from {
+                prefix-list-filter public-ipv4-prefixes orlonger;
+            }
+            then reject;
+        }
+        term No_Default {
+            from {
+                route-filter 0.0.0.0/0 exact;
+            }
+            then reject;
+        }
+        term default_accept {
+            then {
+                local-preference {{ provider.local_pref }};
+                accept;
+            }
+        }
+    }
+    {% endif %}
+{% endfor %}
+{% set processed_as_prepends = {} %}
+{% for provider in config.bgp.wan_peers.providers %}
+    {% if provider.as_prepend not in processed_as_prepends and provider.as_prepend is not none %}
+        {% set _ = processed_as_prepends.update({provider.as_prepend: True}) %}
+        {% set as_path_prepend = ' '.join([ config['asn'] ] * provider.as_prepend|int) %}
+    policy-statement to_provider_prepend_x{{ provider.as_prepend }} {
+        term Campus {
+            from {
+                prefix-list announce-ipv4-prefixes;
+            }
+            then {
+                as-path-prepend "{{ as_path_prepend }}";
+                accept;
+            }
+        }
+        term default_deny {
+            then reject;
+        }
+    }
+    policy-statement to_provider_prepend_x{{ provider.as_prepend }}_ipv6 {
+        term Campus {
+            from {
+                prefix-list announce-ipv6-prefixes;
+            }
+            then {
+                as-path-prepend "{{ as_path_prepend }}";
+                accept;
+            }
+        }
+        term default_deny {
+            then reject;
+        }
+    }
+    {% endif %}
+{% endfor %}
+{% set processed_communities = {} %}
+{% for provider in config.bgp.wan_peers.ddos %}
+    {% for community in provider.communities %}
+        {% if community not in processed_communities %}
+            {% set _ = processed_communities.update({community: True}) %}
+    community Scrubbing-{{ community.split(':')[-1] }}-VRF members {{ community }};
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+}
+protocols {
+    bgp {
+        group providers {
+            type external;
+            mtu-discovery;
+            family inet {
+                unicast;
+            }
+            local-as {{ config['asn'] }} loops 2;
+            bfd-liveness-detection {
+                minimum-interval 350;
+                multiplier 3;
+                session-mode single-hop;
+            }
+     {% for peer in config['bgp']['wan_peers']['providers'] %}
+         {% if '::' in peer['ip'] %}
+         {% else %}
+            neighbor {{ peer['ip'] }} {
+                description "{{ peer['name'] }}";
+              {% if 'accept_only_default' in peer and peer['accept_only_default'] %}
+                import from_provider_accept_only_default;
+              {% elif 'accept_default' in peer and peer['accept_default'] %}
+                import from_provider_accept_default;
+              {% elif 'local_pref' in peer and peer['local_pref'] %}
+                import from_provider_reject_default_local_pref_{{ peer['local_pref'] }};
+              {% else %}
+                import from_provider_reject_default;
+              {% endif %}
+            {% if 'as_prepend' in peer and peer['as_prepend'] %}
+                export to_provider_prepend_x{{ peer['as_prepend'] }};
+            {% else %}
+                export to_provider;
+            {% endif %}
+              {% if not ('private-as-allow' in peer and peer['private-as-allow']) %}
+                remove-private;
+              {% endif %}
+                peer-as {{ peer['asn'] }};
+              {% for auth_peer in config['bgp']['auth'] %}
+                {% if auth_peer['ip'] == peer['ip'] %}
+                authentication-key "{{ auth_peer['key'] }}";
+                {% endif %}
+              {% endfor %}
+              {% if 'disabled' in peer and peer['disabled'] %}
+                shutdown;
+              {% endif %}
+            }
+         {% endif %}
+     {% endfor %}
+        }
+        group providers-ipv6 {
+            type external;
+            mtu-discovery;
+            family inet6 {
+                unicast;
+                flow;
+            }
+            export redist-ipv6;
+            local-as {{ config['asn'] }} loops 2;
+            bfd-liveness-detection {
+                minimum-interval 350;
+                multiplier 3;
+                session-mode single-hop;
+            }
+     {% for peer in config['bgp']['wan_peers']['providers'] %}
+         {% if '::' in peer['ip'] %}
+            neighbor {{ peer['ip'] }} {
+                description "{{ peer['name'] }}";
+              {% if 'accept_only_default' in peer and peer['accept_only_default'] %}
+                import from_provider_accept_only_default_ipv6;
+              {% elif 'accept_default' in peer and peer['accept_default'] %}
+                import from_provider_accept_default_ipv6;
+              {% elif 'local_pref' in peer and peer['local_pref'] %}
+                import from_provider_reject_default_ipv6_local_pref_{{ peer['local_pref'] }};
+              {% else %}
+                import from_provider_reject_default_ipv6;
+              {% endif %}
+              {% if 'as_prepend' in peer and peer['as_prepend'] %}
+                export to_provider_prepend_x{{ peer['as_prepend'] }}_ipv6;
+              {% else %}
+                export to_provider_ipv6;
+              {% endif %}
+              {% if not ('private-as-allow' in peer and peer['private-as-allow']) %}
+                remove-private;
+              {% endif %}
+                peer-as {{ peer['asn'] }};
+              {% for auth_peer in config['bgp']['auth'] %}
+                {% if auth_peer['ip'] == peer['ip'] %}
+                authentication-key "{{ auth_peer['key'] }}";
+                {% endif %}
+              {% endfor %}
+                {% if 'disabled' in peer and peer['disabled'] %}
+                shutdown;
+                {% endif %}
+            }
+         {% endif %}
+     {% endfor %}
+        }
+        group Scrubbing-DDoS {
+            type external;
+            mtu-discovery;
+            family inet {
+                unicast;
+            }
+            local-as {{ config['asn'] }} loops 2;
+            bfd-liveness-detection {
+                minimum-interval 350;
+                multiplier 3;
+                session-mode single-hop;
+            }
+     {% for peer in config['bgp']['wan_peers']['ddos'] %}
+         {% if '::' in peer['ip'] %}
+         {% else %}
+            neighbor {{ peer['ip'] }} {
+                description "{{ peer['name'] }}";
+                import deny-all;
+                export Scrubbing-DDoS;
+              {% if not ('private-as-allow' in peer and peer['private-as-allow']) %}
+                remove-private;
+              {% endif %}
+                peer-as {{ peer['asn'] }};
+              {% for auth_peer in config['bgp']['auth'] %}
+                {% if auth_peer['ip'] == peer['ip'] %}
+                authentication-key "{{ auth_peer['key'] }}";
+                {% endif %}
+              {% endfor %}
+              {% if 'disabled' in peer and peer['disabled'] %}
+                shutdown;
+              {% endif %}
+            }
+         {% endif %}
+     {% endfor %}
+        }
+        group Scrubbing-DDoS-ipv6 {
+            type external;
+            mtu-discovery;
+            family inet6 {
+                unicast;
+                flow;
+            }
+            export redist-ipv6;
+            local-as {{ config['asn'] }} loops 2;
+            bfd-liveness-detection {
+                minimum-interval 350;
+                multiplier 3;
+                session-mode single-hop;
+            }
+     {% for peer in config['bgp']['wan_peers']['ddos'] %}
+         {% if '::' in peer['ip'] %}
+            neighbor {{ peer['ip'] }} {
+                description "{{ peer['name'] }}";
+                import deny-all;
+                export Scrubbing-DDoS-ipv6;
+              {% if not ('private-as-allow' in peer and peer['private-as-allow']) %}
+                remove-private;
+              {% endif %}
+                peer-as {{ peer['asn'] }};
+              {% for auth_peer in config['bgp']['auth'] %}
+                {% if auth_peer['ip'] == peer['ip'] %}
+                authentication-key "{{ auth_peer['key'] }}";
+                {% endif %}
+              {% endfor %}
+                {% if 'disabled' in peer and peer['disabled'] %}
+                shutdown;
+                {% endif %}
+            }
+         {% endif %}
+     {% endfor %}
+        }
+        group border-routers {
+            type internal;
+            mtu-discovery;
+            family inet {
+                unicast;
+            }
+            export send-direct;
+            local-as {{ config['asn'] }} loops 2;
+            bfd-liveness-detection {
+                minimum-interval 350;
+                multiplier 3;
+                session-mode single-hop;
+            }
+     {% for peer in config['bgp']['wan_peers']['border-routers'] %}
+         {% if '::' in peer['ip'] %}
+         {% else %}
+            neighbor {{ peer['ip'] }} {
+                description "{{ peer['name'] }}";
+                export vrf-ibgp;
+                peer-as {{ peer['asn'] }};
+              {% for auth_peer in config['bgp']['auth'] %}
+                {% if auth_peer['ip'] == peer['ip'] %}
+                authentication-key "{{ auth_peer['key'] }}";
+                {% endif %}
+              {% endfor %}
+                {% if 'disabled' in peer and peer['disabled'] %}
+                shutdown;
+                {% endif %}
+            }
+         {% endif %}
+     {% endfor %}
+        }
+        group border-routers-ipv6 {
+            type internal;
+            mtu-discovery;
+            family inet6 {
+                unicast;
+                flow;
+            }
+            export send-direct;
+            local-as {{ config['asn'] }} loops 2;
+            bfd-liveness-detection {
+                minimum-interval 350;
+                multiplier 3;
+                session-mode single-hop;
+            }
+     {% for peer in config['bgp']['wan_peers']['border-routers'] %}
+         {% if '::' in peer['ip'] %}
+            neighbor {{ peer['ip'] }} {
+                description "{{ peer['name'] }}";
+                export vrf-ibgp;
+                peer-as {{ peer['asn'] }};
+              {% for auth_peer in config['bgp']['auth'] %}
+                {% if auth_peer['ip'] == peer['ip'] %}
+                authentication-key "{{ auth_peer['key'] }}";
+                {% endif %}
+              {% endfor %}
+                {% if 'disabled' in peer and peer['disabled'] %}
+                shutdown;
+                {% endif %}
+            }
+         {% endif %}
+     {% endfor %}
+        }
+        group service-nodes {
+            type external;
+            mtu-discovery;
+            family inet {
+                unicast;
+            }
+            local-as {{ config['asn'] }} loops 2;
+            bfd-liveness-detection {
+                minimum-interval 350;
+                multiplier 3;
+                session-mode single-hop;
+            }
+     {% for vrf in config['vrfs'] %}
+         {% if vrf['name'] == config['transit_vrf'] %}
+             {% for peer in config['bgp']['wan_peers']['service-nodes'] %}
+                 {% if '::' in peer['ip'] %}
+                 {% else %}
+                    neighbor {{ peer['ip'] }} {
+                        description "{{ peer['name'] }}";
+                        import from_service_node;
+                        export to_service_node;
+                        peer-as {{ config['bgp']['overlay_asn'] }}.{{ vrf['rd'] }};
+                      {% for auth_peer in config['bgp']['auth'] %}
+                        {% if auth_peer['ip'] == peer['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                        {% endif %}
+                      {% endfor %}
+                        {% if 'disabled' in peer and peer['disabled'] %}
+                        shutdown;
+                        {% endif %}
+                    }
+                 {% endif %}
+             {% endfor %}
+         {% endif %}
+     {% endfor %}
+        }
+        group service-nodes-ipv6 {
+            type external;
+            mtu-discovery;
+            family inet6 {
+                unicast;
+                flow;
+            }
+            local-as {{ config['asn'] }} loops 2;
+            bfd-liveness-detection {
+                minimum-interval 350;
+                multiplier 3;
+                session-mode single-hop;
+            }
+     {% for vrf in config['vrfs'] %}
+         {% if vrf['name'] == config['transit_vrf'] %}
+             {% for peer in config['bgp']['wan_peers']['service-nodes'] %}
+                 {% if '::' in peer['ip'] %}
+                    neighbor {{ peer['ip'] }} {
+                        description "{{ peer['name'] }}";
+                        import from_service_node_ipv6;
+                        export to_service_node_ipv6;
+                        peer-as {{ config['bgp']['overlay_asn'] }}.{{ vrf['rd'] }};
+                      {% for auth_peer in config['bgp']['auth'] %}
+                        {% if auth_peer['ip'] == peer['ip'] %}
+                        authentication-key "{{ auth_peer['key'] }}";
+                        {% endif %}
+                      {% endfor %}
+                        {% if 'disabled' in peer and peer['disabled'] %}
+                        shutdown;
+                        {% endif %}
+                    }
+                 {% endif %}
+             {% endfor %}
+         {% endif %}
+     {% endfor %}
+        }
+    }
+}
+

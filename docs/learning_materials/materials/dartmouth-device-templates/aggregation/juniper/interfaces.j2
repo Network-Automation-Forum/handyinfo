@@ -1,0 +1,136 @@
+{% if 'lacp' in config %}
+chassis {
+    aggregated-devices {
+        ethernet {
+            device-count {{ config['lag_count'] }};
+        }
+    }
+}
+interfaces {
+    {% for bundle in config['lacp'] %}
+    {% for member in bundle['members'] %}
+    {{ member }} {
+        description "member of {{ bundle['name'] }}";
+        ether-options {
+            802.3ad {{ bundle['name'] }};
+        }
+    }
+    {{ bundle['name'] }} {
+        aggregated-ether-options {
+            lacp {
+                active;
+                periodic fast;
+            }
+        }
+    }
+    {% endfor %}
+    {% endfor %}
+}
+{%- endif %} 
+{% for interface in config['interfaces'] %}
+{% if 'lacp_interfaces' not in config or interface['name'] not in config['lacp_interfaces'] %}
+{% if ':' in interface['name'] and 'xe-' in interface['name'] %}
+{% if 'QFX5110-48S-4C' in config['device_platform'] %}
+chassis {
+    fpc {{ interface['name'] | regex_replace('^[a-z]*\-(?P<fpc>\\d+)/(?P<pic>\\d+)/(?P<port>\\d+):(?P<channel>\\d+)', '\\g<fpc>') }} {
+        pic {{ interface['name'] | regex_replace('^[a-z]*\-(?P<fpc>\\d+)/(?P<pic>\\d+)/(?P<port>\\d+):(?P<channel>\\d+)', '\\g<pic>') }} {
+            port {{ interface['name'] | regex_replace('^[a-z]*\-(?P<fpc>\\d+)/(?P<pic>\\d+)/(?P<port>\\d+):(?P<channel>\\d+)', '\\g<port>') }} {
+                channel-speed 10g;
+            }
+        }
+    }
+}
+{% endif %}
+{% endif %}
+interfaces {
+    {% if 'mode' in interface and interface['mode'] is not none and not interface['vlans']|length > 0 %}
+    {{ interface['name'] }} {
+        disable;
+    }
+    {% else %}
+    {{ interface['name'] }} {
+        {% if 'description' in interface %}
+        description "{{ interface['description'] }}";
+        {% endif %}
+        {% if 'enabled' in interface and not interface['enabled'] %}
+        disable;
+        {% endif %}
+        {% if not 'send_traps' in interface %}
+        no-traps;
+        {% endif %}
+        {% if 'native_vlan' in interface %}
+        native-vlan-id {% for vlan in config['vlans'] %}{% if vlan['name'] == interface['native_vlan'] %}{{ vlan['vid'] }}{% endif %}{% endfor %};
+        {% endif %}
+        {% if 'mtu' in interface %}
+        mtu {{ interface['mtu'] }};
+        {% endif %} 
+        unit 0 {
+            family ethernet-switching {
+                {% if 'mode' in interface %}
+                interface-mode {{ interface['mode'] }};
+                vlan {
+                    {% if interface['mode'] == 'access' %}
+                    members {{ interface['vlans'] }};
+                    {% else %}
+                    members [ {% for vlan in interface['vlans'] %}{{ vlan }} {% endfor %}];
+                    {% endif %}
+                }
+                {% if interface['mode'] == 'access' %}
+                storm-control default;
+                recovery-timeout 600;
+                {% endif %}
+                {% endif %}
+            }
+        }
+    }
+    {% endif %}
+}
+{% if 'mode' in interface and interface['mode'] == 'access' and not 'no_mac_limit' in interface %}
+vlans {
+    {{ interface['vlans'] }} {
+        switch-options {
+            interface {{ interface['name'] }}.0 {
+                interface-mac-limit {
+                    50;
+                    packet-action drop-and-log;
+                }
+            }
+        }
+    }
+}
+{% endif %}
+{% if 'base-t' in interface['type']['value'] %}
+poe {
+    interface {{ interface['name'] }} {
+        telemetries;
+        {% if 'enabled' in interface and not interface['enabled'] %}
+        disable;
+        {% else %}
+        {% if 'poe_disabled' in interface %}
+        disable;
+        {% elif 'poe_4' in interface and 'poe_disabled' not in interface %}
+        maximum-power 4;
+        {% elif 'poe_7' in interface and 'poe_disabled' not in interface %}
+        maximum-power 7;
+        {% elif 'poe_15' in interface and 'poe_disabled' not in interface %}
+        maximum-power 15.4;
+        {% elif 'poe_30' in interface and 'poe_disabled' not in interface %}
+        maximum-power 30;
+        {% elif 'poe_45' in interface and 'poe_disabled' not in interface %}
+        maximum-power 45;
+        {% elif 'poe_60' in interface and 'poe_disabled' not in interface %}
+        maximum-power 60;
+        {% elif 'poe_75' in interface and 'poe_disabled' not in interface %}
+        maximum-power 75;
+        {% elif 'poe_90' in interface and 'poe_disabled' not in interface %}
+        maximum-power 90;
+        {% else %}
+        maximum-power 30;
+        {% endif %}
+        {% endif %}
+    }
+}
+{% endif %}
+{% endif %}
+{% endfor %}
+

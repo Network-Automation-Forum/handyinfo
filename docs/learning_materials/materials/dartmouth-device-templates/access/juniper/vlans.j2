@@ -1,0 +1,77 @@
+vlans {
+{% for vlan in config['vlans'] %}
+    {{ vlan['name'] }} {
+        vlan-id {{ vlan['vid'] }};    
+        {% if 'System_MAC_Limit' in config['custom_fields'] and config['custom_fields']['System_MAC_Limit'] > 0 %}
+        switch-options {
+            interface-mac-limit {
+                {{ config['custom_fields']['System_MAC_Limit'] }};
+                packet-action drop-and-log;
+            }
+            {% for interface in config['interfaces'] %}
+            {% if 'mode' in interface and interface['mode'] == "trunk" and interface['name'] not in config['lacp_interfaces'] and interface['enabled'] %}
+            interface {{ interface['name'] }}.0 {
+                interface-mac-limit {
+                    {{ config['custom_fields']['System_MAC_Limit'] }}; 
+                    packet-action drop-and-log;
+                }
+            }
+            {% endif %}
+            {% endfor %}
+        }
+        {% endif %}
+        {% if vlan['name'] == 'voice' %}
+        forwarding-options {
+            filter {
+                input block-cdp;
+            }
+        }
+        {% endif %}
+        {% if 'acl_eth_in' in vlan['tags'] %}
+        forwarding-options {
+            filter {
+                input {{ vlan['tags']['acl_eth_in'] }}
+            }
+        }
+        {% endif %}
+        {% if 'acl_eth_out' in vlan['tags'] and not 'QFX5100' in config['device_platform'] and not ( 'EX4400' in config['device_platform'] and vlan['tags']['acl_eth_out'] == 'block-chatter' ) %}
+        forwarding-options {
+            filter {
+                output {{ vlan['tags']['acl_eth_out'] }}
+            }
+        }
+        {% endif %}
+        {% if 'dhcpsnooping' in vlan['tags'] %}
+        forwarding-options {
+            dhcp-security {
+                {# option-82;  ### This seems to break Mist APs, at the very least... But also doesn't seem to be needed... #}
+                group trusted-interfaces {
+                    overrides {
+                        trusted;
+                    }
+                    {% for interface in config['interfaces'] %}
+                    {% if 'dhcp_snooping_trusted' in interface %}
+                    interface {{ interface['name'] }};
+                    {% endif %}
+                    {% endfor %}
+                }
+                group untrusted-interfaces {
+                    overrides {
+                        untrusted;
+                    }
+                    {% for interface in config['interfaces'] %}
+                    {% if 'dhcp_snooping_trusted' not in interface and 'mode' in interface and interface['mode'] == "trunk" %}
+                    interface {{ interface['name'] }};
+                    {% endif %}
+                    {% endfor %}
+                }
+            }
+        }
+        {% endif %}
+        {% if vlan['vid'] in config['routed-vlans'] %}
+        l3-interface irb.{{ vlan['vid'] }};
+        {% endif %}
+    }
+{% endfor %}
+}
+

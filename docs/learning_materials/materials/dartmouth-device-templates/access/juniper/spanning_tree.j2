@@ -1,0 +1,85 @@
+protocols {
+    rstp {
+        bridge-priority {{ config['rstp_priority'] }};
+        {% for interface in config['interfaces'] %}
+         {% if interface['enabled'] %}
+          {% if not interface['routed-parent'] and not interface['routed-subinterface'] %}
+           {% if interface['name'] in config['basenames'] %}
+            {% if 'lacp_interfaces' not in config or interface['name'] not in config['lacp_interfaces'] %}
+        interface {{ interface['name'] }} {
+             {% if 'mode' not in interface or interface['mode'] == 'access' %}
+              {% if not 'can_have_bpdus' in interface %}
+            edge;
+              {% else %}
+            mode point-to-point;
+              {% endif %}
+            no-root-port;
+             {% else %}
+            mode point-to-point;
+              {% if 'spanning_tree_root' in interface %}
+              {% else %}
+            no-root-port;
+              {% endif %}
+             {% endif %}
+        }
+            {% endif %}
+           {% endif %}
+          {% endif %}
+         {% endif %}
+        {% endfor %}
+        bpdu-block-on-edge;
+    }
+    layer2-control {
+        bpdu-block {
+            disable-timeout 600;
+            {% for interface in config['interfaces'] %}
+             {% if interface['enabled'] %}
+              {% if interface['name'] in config['basenames'] %}
+               {% if 'lacp_interfaces' not in config or interface['name'] not in config['lacp_interfaces'] %}
+                {% if 'mode' not in interface or interface['mode'] == 'access' and interface['enabled'] %}
+                 {% if not 'can_have_bpdus' in interface %}
+            interface {{ interface['name'] }};
+                 {% endif %}
+                {% endif %}
+               {% endif %}
+              {% endif %}
+             {% endif %}
+            {% endfor %}
+        }
+    }
+    vstp {
+        vlan all {
+            bridge-priority {{ config['rstp_priority'] }};
+            interface all;
+        }
+        interface all;
+        {% for interface in config['interfaces'] %}
+         {% if interface['enabled'] %}
+          {% if not interface['routed-parent'] and not interface['routed-subinterface'] %}
+           {% if interface['name'] in config['basenames'] %}
+            {% if 'lacp_interfaces' not in config or interface['name'] not in config['lacp_interfaces'] %}
+        interface {{ interface['name'] }} {
+             {% if 'mode' not in interface or interface['mode'] == 'access' %}
+              {% if not 'can_have_bpdus' in interface %}
+            edge;
+              {% else %}
+            mode point-to-point;
+              {% endif %}
+            no-root-port;
+             {% else %}
+            mode point-to-point;
+              {% if 'spanning_tree_root' in interface %}
+              {% else %}
+            no-root-port;
+              {% endif %}
+             {% endif %}
+        }
+            {% endif %}
+           {% endif %}
+          {% endif %}
+         {% endif %}
+        {% endfor %}
+        bpdu-block-on-edge;
+    }
+}
+

@@ -1,0 +1,214 @@
+protocols {
+    evpn {
+        encapsulation vxlan;
+        extended-vni-list all;
+        default-gateway no-gateway-community;
+        duplicate-mac-detection {
+            detection-threshold 20;
+            detection-window 5;
+            auto-recovery-time 5;
+        }
+    }
+    bgp {
+        family inet {
+            any {
+                loops 2;
+            }
+        }
+    }
+}
+policy-options {
+{% for vrf in config['vrfs'] %}
+  {% if 'rd' in vrf and vrf['rd'] != None %}
+    community {{ vrf['name'] }}-vrf members target:{{ config['evpn']['target_asn'] }}:{{ vrf['rd'] }};
+  {% endif %}
+{% endfor %}
+    community evpn-switching members target:{{ config['evpn']['target_asn'] }}:{{ config['evpn']['target_switching_rd'] }};
+    policy-statement evpn-switching {
+        term layer2 {
+            from community evpn-switching;
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+}
+switch-options {
+    vtep-source-interface lo0.0;
+    route-distinguisher {{ config['router_id'] }}:{{ config['evpn']['target_switching_rd'] }};
+    vrf-import evpn-switching;
+    vrf-target {
+        target:{{ config['evpn']['target_asn'] }}:{{ config['evpn']['target_switching_rd'] }};
+        auto;
+    }
+}
+policy-options {
+{% for vrf in config['vrfs'] %}
+  {% if 'rd' in vrf and vrf['rd'] != None %}
+    policy-statement {{ vrf['name'] }}-vrf-export {
+        term {{ vrf['name'] }}-networks {
+            {% for int in config['interfaces'] if not int['name'] in config['lacp_interfaces'] %}
+              {% if 'vrf' in int and int['vrf'] == vrf['name'] %}
+            from interface {{ int['name'] }};
+              {% endif %}
+            {% endfor %}
+            then {
+                community add {{ vrf['name'] }}-vrf;
+                accept;
+            }
+        }
+        term {{ vrf['name'] }}-local {
+            from {
+                protocol local;
+                route-filter 0.0.0.0/0 prefix-length-range /32-/32;
+            }
+            then {
+                community add {{ vrf['name'] }}-vrf;
+                accept;
+            }
+        }
+        {% if vrf['leak_vrf'] == True %}
+        term Anycast-hosts {
+            from {
+                protocol bgp;
+          {% for ip in config['anycast_ips'] %}
+            {% if ip['vrf'] == vrf['name'] %}
+                {% if not '::' in ip['address'] %}
+                route-filter {{ ip['network'] }} orlonger;
+                {% endif %}
+            {% endif %}
+          {% endfor %}
+            }
+            then {
+                community add {{ vrf['name'] }}-vrf;
+                accept;
+            }
+        }
+        {% elif vrf['default_receive'] == True %}
+          {% if config['transit_vrf'] == vrf['name'] %}
+        term bgp-routes {
+            from {
+                family inet;
+                protocol bgp;
+                route-filter 0.0.0.0/0 exact;
+            }
+            then accept;
+        }
+          {% else %}
+        term default-route {
+            from {
+                protocol bgp;
+                route-filter 0.0.0.0/0 exact;
+            }
+            then {
+                community add {{ vrf['name'] }}-vrf;
+                accept;
+            }
+        }
+          {% endif %}
+        {% endif %}
+        term default-reject {
+            then reject;
+        }
+    }
+    policy-statement {{ vrf['name'] }}-vrf-import {
+    {% if vrf['receive_leaks'] == True %}
+      {% for vrf2 in config['vrfs'] %}
+        {% if 'rd' in vrf2 and vrf2['rd'] != None and vrf2['leak_vrf'] == True and vrf2['name'] != vrf['name'] %}
+        term {{ vrf2['name'] }}-vrf-no-default {
+            from {
+                community {{ vrf2['name'] }}-vrf;
+                route-filter 0.0.0.0/0 exact;
+            }
+            then reject;
+        }
+        term {{ vrf2['name'] }}-vrf {
+            from {
+                community {{ vrf2['name'] }}-vrf;
+                prefix-list leaked-ipv4-routed-prefixes;
+                prefix-list leaked-ipv4-other-prefixes;
+            }
+            then accept;
+        }
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if vrf['leak_vrf'] == True %}
+      {% for vrf2 in config['vrfs'] %}
+        {% if 'rd' in vrf2 and vrf2['rd'] != None and vrf2['receive_leaks'] == True and vrf2['name'] != vrf['name'] %}
+        term {{ vrf2['name'] }}-vrf-no-default {
+            from {
+                community {{ vrf2['name'] }}-vrf;
+                route-filter 0.0.0.0/0 exact;
+            }
+            then reject;
+        }
+        term {{ vrf2['name'] }}-vrf {
+            from community {{ vrf2['name'] }}-vrf;
+            then accept;
+        }
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+        term {{ vrf['name'] }}-vrf {
+            from community {{ vrf['name'] }}-vrf;
+            then accept;
+        }
+        term reject-others {
+            then reject;
+        }
+    }
+  {% endif %}
+{% endfor %}
+}
+
+{% for vrf in config['vrfs'] %}
+  {% if 'rd' in vrf and vrf['rd'] != None %}
+routing-instances {
+    {{ vrf['name'] }} {
+        instance-type vrf;
+    {% for int in config['interfaces'] if not int['name'] in config['lacp_interfaces'] %}
+        {% if 'vrf' in int and int['vrf'] == vrf['name'] %}
+        interface {{ int['name'] }};
+        {% endif %}
+    {% endfor %}
+        route-distinguisher {{ config['bgp']['overlay_device_id'] }}:{{ vrf['rd'] }};
+        vrf-import {{ vrf['name'] }}-vrf-import;
+        vrf-table-label;
+        vrf-target target:{{ config['evpn']['target_asn'] }}:{{ vrf['rd'] }};
+        routing-options {
+            multipath;
+            auto-export;
+            autonomous-system {
+                {{ config['bgp']['overlay_asn'] }}.{{ vrf['rd'] }};
+                loops 2;
+                independent-domain {
+                    no-attrset;
+                }
+            }
+    {% for ip_addr in config['loopback_ips'] %}
+        {% if ip_addr['vrf'] == vrf['name'] and not '::' in ip_addr['address'] %}
+            router-id {{ ip_addr['address'] }};
+        {% endif %}
+    {% endfor %}
+        }
+    {% if 'no_evpn' in vrf and vrf['no_evpn'] %}
+    {% else %}
+        protocols {
+            evpn {
+                ip-prefix-routes {
+                    advertise direct-nexthop;
+                    encapsulation vxlan;
+                    vni {{ vrf['rd'] }};
+                    import {{ vrf['name'] }}-vrf-import;
+                    export {{ vrf['name'] }}-vrf-export;
+                }
+            }
+        }
+    {% endif %}
+    }
+}
+  {% endif %}
+{% endfor %}
+
