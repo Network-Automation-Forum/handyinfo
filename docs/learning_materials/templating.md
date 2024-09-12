@@ -48,7 +48,7 @@ For those with templates already, this is your [call to action](#contributing) t
 
 ??? quote "README"
     {%
-    include-markdown "learning_materials/materials/dartmouth-device-templates/README.md" 
+    include-markdown "../../examples/dartmouth-device-templates/README.md" 
     %}
 
 
