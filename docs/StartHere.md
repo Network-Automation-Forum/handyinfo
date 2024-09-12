@@ -6,6 +6,7 @@
 * [Go](learning_materials/go.md) Programming Langauage
 * [Git](learning_materials/git.md) Version Control
 * [Ansible](learning_materials/ansible.md) Automation Framework
+* [Terraform](learning_materials/terraform.md) Automation Framework
 * [Nornir](learning_materials/nornir.md) Automation Framework
 * [Autonomicon](https://autonomicon.networkautomation.forum/) - We're building out a lexicon / glossary for "standard" and/or common network automation terms and concepts...
 * More needed here...
