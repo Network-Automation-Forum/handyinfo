@@ -45,7 +45,7 @@ For those with templates already, this is your [call to action](#contributing) t
 
 ### Dartmouth College
 
-[Github Link to Templates](https://github.com/Network-Automation-Forum/handyinfo/tree/main/docs/learning_materials/materials/dartmouth-device-templates)
+[Github Link to Templates](https://github.com/Network-Automation-Forum/handyinfo/tree/main/examples/dartmouth-device-templates)
 
 ??? quote "README"
     {%
