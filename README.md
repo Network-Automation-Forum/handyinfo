@@ -1,7 +1,7 @@
 # Handy Info
 Information about network automation, orchestration, and observability that you just might find handy.
 
-First time here? New to Network Automation? [START HERE](https://github.com/Network-Automation-Forum/handyinfo/blob/main/StartHere.md)
+First time here? New to Network Automation? [START HERE](docs/StartHere.md)
 
 ## About this repo...
 
