@@ -14,7 +14,7 @@ nav:
       - Nornir: "learning_materials/nornir.md"
       - Templating: "learning_materials/templating.md"
   - Examples:
-      - Dartmouth College Jinja2 Templates: "examples/dartmouth-device-templates"
+      - Dartmouth College Jinja2 Templates: "examples/dartmouth-device-templates/README.md"
   - AutoCon Coverage:
       - AutoCon0: "autocon_coverage/autocon0.md"
       - AutoCon1: "autocon_coverage/autocon1.md"
