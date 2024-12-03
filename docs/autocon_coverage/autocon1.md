@@ -8,6 +8,7 @@ A collection of links to AC1 related content.
 ## Podcasts
 
 ## Videos
+-   Videos of all presentations are available on our [AC1 YouTube playlist](https://www.youtube.com/playlist?list=PLP6VWb4PEbEoYgAivX69Br12nH1vtTBQr) 
 -   [Network Automation Forum - Autocon1 | The Interviews](https://www.youtube.com/watch?v=zJ6YE7iFAhA) - by Roger Perkin
 
 ## Slides

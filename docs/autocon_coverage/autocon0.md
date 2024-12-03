@@ -21,4 +21,4 @@ A collection of links to AC0 related content.
 -   [https://overcast.fm/+GptXEtRdA](https://overcast.fm/+GptXEtRdA) 
 
 ## Videos
--   [https://www.youtube.com/watch?v=6JdtQtxgw2E&t=194s](https://www.youtube.com/watch?v=6JdtQtxgw2E&t=194s) More coming soon!
+-   Videos of all presentations are available on our [AC0 YouTube playlist](https://www.youtube.com/playlist?list=PLP6VWb4PEbEo4i47JpOykMCM-qt2SpO9r)
