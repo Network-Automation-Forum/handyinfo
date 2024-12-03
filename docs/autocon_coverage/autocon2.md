@@ -1,6 +1,6 @@
-# Folks are talking about AutoCon 1, here's what they're saying...
+# Folks are talking about AutoCon 2, here's what they're saying...
 
-A collection of links to AC1 related content.
+A collection of links to AC2 related content.
 
 ## Blogs
 - Add a link your content!
