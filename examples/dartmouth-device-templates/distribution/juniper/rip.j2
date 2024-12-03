@@ -1,0 +1,73 @@
+{% if 'rip' in config %}
+firewall {
+    family inet {
+        filter mgmt-traffic {
+            term rip {
+                from {
+                    destination-address 224.0.0.9/32;
+                    destination-port 520;
+                    protocol udp;
+                    {% for ripinterface in config['rip']['interfaces'] %}
+                    interface {{ ripinterface }};
+                    {% endfor %}
+                }
+                then accept;
+            }
+        }
+    }
+}
+
+
+{% for ripinterface in config['rip'] %}
+policy-options {
+    policy-statement {{ ripinterface['sendpolicy']['name'] }} {
+        {% for term in ripinterface['sendpolicy']['terms'] %}
+        term {{ term['name'] }} {
+            {% if 'conditions' in term %}
+            from {
+            {% for condition in term['conditions'] %}
+                {{ condition }};
+            {% endfor %}
+            }
+            {% endif %}
+            then { 
+                {{ term['action'] }};
+            } 
+        }
+        {% endfor %}
+    }
+    policy-statement {{ ripinterface['receivepolicy']['name'] }} {
+        {% for term in ripinterface['receivepolicy']['terms'] %}
+        term {{ term['name'] }} {
+            {% if 'conditions' in term %}
+            from {
+            {% for condition in term['conditions'] %}
+                {{ condition }};
+            {% endfor %}
+            }
+            {% endif %}
+            then {
+                {{ term['action'] }};
+            }
+        }
+        {% endfor %}
+    }
+}
+
+
+{% if 'vrf' in ripinterface %}
+routing-instances {{ ripinterface['vrf'] }} {
+{% endif %}
+    protocols rip {
+        group {{ ripinterface['name'] }} {
+            export {{ ripinterface['sendpolicy']['name'] }};
+            import {{ ripinterface['receivepolicy']['name'] }};
+            neighbor {{ ripinterface['name'] }};
+        }
+    }
+{% if 'vrf' in ripinterface %}
+}
+{% endif %}
+{% endfor %}
+
+{% endif %}

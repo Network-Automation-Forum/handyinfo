@@ -1,0 +1,338 @@
+{% if 'lacp' in config %}
+chassis {
+    aggregated-devices {
+        ethernet {
+            device-count {{ config['lag_count'] }};
+        }
+    }
+}
+protocols {
+    layer2-control {
+        bpdu-block {
+    {% for bundle in config['lacp'] %}
+            interface {{ bundle['name'] }} {
+                drop;
+            }
+    {% endfor %}
+        }
+    }
+}
+interfaces {
+  {% for bundle in config['lacp'] %}
+    {% for member in bundle['members'] %}
+    {{ member }} {
+        {% for interface in config['interfaces'] %}
+            {% if member == interface['name'] %}
+              {% if (not interface['enabled']) or (('in_maintenance_mode' in config) and (config['in_maintenance_mode'] == True)) %}
+        disable;
+              {% endif %}
+              {% if 'fec' in interface and interface['fec'] %}
+        gigether-options {
+            fec fec91;
+        }
+              {% endif %}
+            {% endif %}
+        {% endfor %}
+        description "member of {{ bundle['name'] }}";
+        ether-options {
+            802.3ad {{ bundle['name'] }};
+        }
+    }
+    {% endfor %}
+    {{ bundle['name'] }} {
+    {% if 'RIOT' in bundle['tags'] %}
+        flexible-vlan-tagging;
+        encapsulation flexible-ethernet-services;
+        aggregated-ether-options {
+            loopback;
+            minimum-links 1;
+        }
+    {% else %}
+      {% if not 'no_lacp' in bundle['tags'] %}
+        aggregated-ether-options {
+            lacp {
+                active;
+                periodic fast;              
+        {% if bundle['lacp_id'] == None %}
+                system-id 00:00:00:06:00:01;
+                admin-key 6;
+        {% else %}
+                system-id {{ bundle['lacp_id'] }};
+                admin-key 6;
+        {% endif %}
+        {% for interface in config['interfaces'] %}
+              {% if interface['name'] == bundle['name'] and 'force_up' in interface and interface['force_up'] %}
+                force-up;
+              {% endif %}
+        {% endfor %}
+            }
+        }
+      {% endif %}
+      {% for int in config['interfaces'] %}
+      {% if int['name'] == bundle['name'] and not 'tagged_subinterfaces' in int and not 'no_evpn' in int %}
+        esi {
+            auto-derive {
+                lacp;
+            }
+            all-active;                     
+        }                                   
+      {% endif %}
+      {% endfor %}
+    {% endif %}
+    }
+  {% endfor %}
+}
+{% endif %}
+{% set ns = namespace(riot_config = '') %}
+{% for interface in config['interfaces'] if not interface['name'] in config['lacp_interfaces'] %}
+interfaces {
+    {% if '.' in interface['name'] %}
+    {% set parts = interface['name'].split('.') %}
+    {% set ifname = parts[0] %}
+    {% set unit = parts[1] %}
+    {% else %}
+    {% set ifname = interface['name'] %}
+    {% set unit = '0' %}
+    {% endif %}
+    {{ ifname }} {
+        {% if 'unused' in interface and interface['unused'] %}
+        unit {{ unit }} {
+            family inet;
+        } 
+        {% else %}
+         {% if ( not interface['enabled'] and (not 'irb' in interface['name']) and not (not 'tagged_subinterfaces' in interface and (('switched' in interface and interface['switched']) or ('routed' in interface and interface['routed']))) ) or ('in_maintenance_mode' in config and config['in_maintenance_mode'] and 'vrf' in interface and not 'lo0' in interface['name'] and not 'irb' in interface['name']) %}
+        disable;
+         {% endif %}
+         {% if 'irb' in ifname %}
+         {% elif not 'subinterface' in interface or ('subinterface' in interface and unit == '0') %}
+        description "{{ interface['description'] }}";
+         {% endif %}
+         {% if 'tagged_subinterfaces' in interface and interface['tagged_subinterfaces'] %}
+        vlan-tagging;
+         {% endif %}
+         {% if 'irb' in ifname %}
+         {% elif 'mtu' in interface %}
+        mtu {{ interface['mtu'] }};
+         {% elif ifname.startswith('et-') or ifname.startswith('ae') %}
+        mtu 9216;
+         {% endif %}
+         {% if 'fec' in interface and interface['fec'] %}
+        gigether-options {
+            fec fec91;
+        }
+         {% endif %}
+         {% if 'riot' in interface and interface['riot'] %}  {# start of RIOT #}
+           {% set ns.riot_config = interface['name'] %}
+           {# find each VRF enabled for EVPN and make a subinterface #}
+           {% for this_vrf in config['vrfs'] %}
+             {% if 'no_evpn' in this_vrf and this_vrf['no_evpn'] %}
+               {# nothing to do here #}
+             {% elif 'rd' in this_vrf and this_vrf['rd'] %}
+        unit {{ this_vrf['rd'] }} {
+            description {{ this_vrf['name'] }}-L3-RIOT;
+            family ethernet-switching {
+                interface-mode trunk;
+                vlan {
+                    members {{ this_vrf['name'] }}-L3-RIOT;
+                }
+            }
+        }
+             {% endif %}
+           {% endfor %}
+           {# find each EVPN VLAN in a VRF and make a subinterface #}
+           {% for this_int in config['interfaces'] %}
+             {% if 'irb' in this_int['name'] %}
+               {% for this_vlan in config['vlans'] %}
+                 {% if (this_vlan['name'] == this_int['native_vlan']) and ('vni' in this_vlan and this_vlan['vni']) %}
+        unit {{ this_vlan['vid'] }} {
+            description {{ this_vlan['name'] }}-RIOT;
+            family ethernet-switching {
+                interface-mode trunk;
+                vlan {
+                    members {{ this_vlan['name'] }};
+                }
+            }
+        }
+                 {% endif %}
+               {% endfor %}
+             {% endif %}
+           {% endfor %}
+         {# start of not RIOT and (not tagged_subints and either (switched or routed))) #}
+         {% elif not 'tagged_subinterfaces' in interface and (('switched' in interface and interface['switched']) or ('routed' in interface and interface['routed'])) %}
+          {% if 'native_vlan' in interface and (not 'irb' in interface['name']) and (not 'tagged_subinterfaces' in interface) and (not 'subinterface' in interface) %}
+        native-vlan-id {% for vlan in config['vlans'] %}{% if vlan['name'] == interface['native_vlan'] %}{{ vlan['vid'] }}{% endif %}{% endfor %};
+          {% endif %}
+        unit {{ unit }} {
+          {% if not interface['enabled'] %}
+            disable;
+          {% endif %}
+          {% if 'irb' in ifname %}
+            description "{{ interface['description'] }}";
+            {% if 'QFX10002-36Q' in config['device_platform'] %}
+            bandwidth 2880g;
+            {% elif 'QFX10002-72Q' in config['device_platform'] %}
+            bandwidth 5760g;
+            {% endif %}
+          {% elif 'subinterface' in interface and interface['subinterface'] and not unit == '0' %}
+            description "{{ interface['description'] }}";
+            vlan-id {% for vlan in config['vlans'] %}{% if vlan['name'] == interface['native_vlan'] %}{{ vlan['vid'] }}{% endif %}{% endfor %};
+          {% endif %}
+          {% if 'routed' in interface and interface['routed'] %}  {# start of routed interface #}
+            {% if 'native_vlan' in interface and interface['native_vlan'] != None and not 'subinterface' in interface and not 'no_evpn' in interface and 'gw_mac' in interface and interface['gw_mac'] %}
+            mac {{ interface['gw_mac'] }};
+            {% endif %}
+            {% if ('ipv4' in interface and interface['ipv4']|length) or (interface['routed'] and 'gateway' in interface and interface['gateway']|length) %}
+            family inet {
+                {% if ifname.startswith('lo0') %}
+                filter {
+                    input mgmt-traffic;
+                }
+                {% endif %}
+                {% if 'gateway' in interface and interface['gateway'] != None and interface['gateway']|length %}
+                address {{ interface['gateway'] }};
+                {% else %}
+                   {% for ip in interface['ipv4'] %}
+                address {{ ip }};
+                   {% endfor %}
+                {% endif %}
+            }
+            {% endif %}
+            {% if ('ipv6' in interface and interface['ipv6']|length) or (interface['routed'] and 'gateway_ipv6' in interface and interface['gateway_ipv6']|length) %}
+            family inet6 {
+                {% if 'gateway_ipv6' in interface and interface['gateway_ipv6'] != None and interface['gateway_ipv6']|length %}
+                address {{ interface['gateway_ipv6'] }};
+                {% else %}
+                    {% for ip in interface['ipv6'] %}
+                address {{ ip }};
+                    {% endfor %}
+                {% endif %}
+            }
+            {% endif %}
+          {% endif %}  {# end of routed interface #}
+          {% if 'switched' in interface and interface['switched'] %}  {# start of switched interface #}
+            family ethernet-switching {
+                interface-mode {{ interface['mode'] }};
+                vlan {
+                    {% if interface['mode'] == 'access' %}
+                    members {{ interface['vlans'] }};
+                    {% else %}
+                      {% set vlan_config = [] %}
+                      {# if no_evpn is set then we should skip checking for connected EVPN VLANs #}
+                      {% if not 'no_evpn' in interface %}
+                        {% for connected_device in config['connected_devices'] %}
+                          {% if connected_device['local_interface'].lower() == ifname %}
+                            {% if connected_device['role'] == 'Legacy' %}
+                              {# Legacy devices get absolutely every VLAN #}
+                              {% for vlan in config['vlans'] %}
+                                {%if 'vni' in vlan and vlan['vni'] != 0 and vlan_config.append(vlan['name']) %} {% endif %}
+                              {% endfor %}
+                            {% else %}
+                              {# Regular devices get only VLANs that are present on the device #}
+                              {% for vlan in connected_device['vlans'] %}
+                                {%if 'vni' in vlan and vlan['vni'] != 0 and vlan_config.append(vlan['name']) %} {% endif %}
+                              {% endfor %}
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
+                      {% endif %}
+                      {% if vlan_config %}
+                    members [ {% for vlan in vlan_config %}{{ config["vids"][vlan] }} {% endfor %}];
+                      {% else %}
+                    members [ {% for vlan in interface['vlans'] %}{{  config["vids"][vlan] }} {% endfor %}];
+                      {% endif %}
+                    {% endif %}
+                }
+                {% if interface['mode'] == 'access' %}
+                storm-control default;
+                recovery-timeout 600;
+                {% endif %}
+            }
+          {% endif %}  {# end of switched interface #}
+        }
+         {% endif %}
+         {# end of not tagged_subints and either (switched or routed)) #} 
+        {% endif %}
+    }
+}
+{% endfor %}
+{% if ns.riot_config != '' %}
+forwarding-options {
+    vxlan-routing {
+        loopback-port {{ ns.riot_config }};
+    }
+}
+protocols {
+    evpn {
+        riot-loopback;
+    }
+}
+  {% for this_vrf in config['vrfs'] %}
+    {% if 'no_evpn' in this_vrf and this_vrf['no_evpn'] %}
+    {% elif 'rd' in this_vrf and this_vrf['rd'] %}
+vlans {
+    {{ this_vrf['name'] }}-L3-RIOT {
+        vlan-id {{ this_vrf['rd'] }};
+        l3-interface irb.{{ this_vrf['rd'] }};
+        vxlan {
+            vni {{ this_vrf['rd'] }};
+            riot-loopback;
+        }
+    }
+}
+routing-instances {
+    {{ this_vrf['name'] }} {
+        interface irb.{{ this_vrf['rd'] }};
+        protocols evpn {
+            irb-symmetric-routing {
+                vni {{ this_vrf['rd'] }};
+            }
+        }
+    }
+}
+interfaces {
+    irb {
+        unit {{ this_vrf['rd'] }} {
+            family inet;
+            interface-state {
+                local-interface {{ ns.riot_config }}.{{ this_vrf['rd'] }};
+                hold-time {
+                    up 120;
+                }
+            }
+            mac 00:00:00:07:{{ "%0x:%0x" % (( this_vrf['rd']|int // 256 ), ( this_vrf['rd']|int % 256 )) }};
+        }
+    }
+}
+    {% endif %}
+  {% endfor %}
+  {% for this_int in config['interfaces'] %}
+    {% if 'irb' in this_int['name'] %}
+      {% for this_vlan in config['vlans'] %}
+        {% if (this_vlan['name'] == this_int['native_vlan']) and ('vni' in this_vlan and this_vlan['vni']) %}
+interfaces {
+    irb {
+        unit {{ this_vlan['vid'] }} {
+            interface-state {
+                local-interface {{ ns.riot_config }}.{{ this_vlan['vid'] }};
+                hold-time {
+                    up 120;
+                }
+            }
+        }
+    }
+}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+{% for interface in config['interfaces'] if not interface['name'] in config['lacp_interfaces'] and 'vrf' in interface %}
+{% if 'lo0' not in interface['name'] and 'native_vlan' in interface and 'irb' in interface['name'] %}
+vlans {
+    {{ interface['native_vlan'] }} {
+        l3-interface {{ interface['name'] }};
+    }
+}
+{% endif %}
+{% endfor %}
+

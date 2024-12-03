@@ -1,5 +1,5 @@
 # Ansible Learning Materials
-Note: Think about using Nornir instead: [Nornir Learning Materials](nornir.md)
+Note: Depending on your use-case, Nornir may be more applicable. See our [Nornir learning materials](nornir.md).
 
 ## Documentation
 * [https://www.ansible.com/](https://www.ansible.com/)
@@ -17,4 +17,4 @@ Note: Think about using Nornir instead: [Nornir Learning Materials](nornir.md)
 * [Ansible Network Automation Course](https://pynet.twb-tech.com/class-ansible.html)
 
 ## Tutorials
-* ???
+* [Killercoda](https://killercoda.com/het-tanis/course/Ansible-Labs)

@@ -1,0 +1,13 @@
+        user {{ user }} {
+            class {{ config[user_key][user]['class'] }};
+            authentication {
+                {% if 'password' in config[user_key][user] %}
+                encrypted-password "{{ config[user_key][user]['password'] }}";
+                {% endif %}
+                {% if 'ssh' in config[user_key][user] %}
+                ssh-rsa "{{ config[user_key][user]['ssh'] }}";
+                {% endif %}
+            }
+            uid {{ config[user_key][user]['uid'] }};
+        }
+

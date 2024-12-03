@@ -1,0 +1,113 @@
+{% if 'lacp' in config %}
+chassis {
+    aggregated-devices {
+        ethernet {
+            device-count {{ config['lag_count'] }};
+        }
+    }
+}
+interfaces {
+{% for bundle in config['lacp'] %}
+{% for member in bundle['members'] %}
+    {{ member }} {
+        description "member of {{ bundle['name'] }}";
+        ether-options {
+            802.3ad {{ bundle['name'] }};
+        }
+    }
+{% endfor %}
+    {{ bundle['name'] }} {
+        aggregated-ether-options {
+            lacp {
+                active;
+                system-id {{ bundle['lacp_id'] }};
+            }
+        }
+        esi {
+            {{ bundle['esi'] }};
+            all-active;
+        }
+    }
+{% endfor %}
+}
+{% endif %}
+interfaces {
+    {% for interface in config['interfaces'] if not interface['name'] in config['lacp_interfaces'] %}
+    {% if '.' in interface['name'] %}
+    {% set parts = interface['name'].split('.') %}
+    {% set ifname = parts[0] %}
+    {% set unit = parts[1] %}
+    {% else %}
+    {% set ifname = interface['name'] %}
+    {% set unit = '0' %}
+    {% endif %}
+    {{ ifname }} {
+        {% if 'unused' in interface and interface['unused'] %}
+        unit {{ unit }} {
+            family inet;
+        } 
+        {% else %}
+        {% if not interface['enabled'] %}
+        disable;
+        {% endif %}
+        {% if not 'subinterface' in interface or not interface['subinterface'] %}
+        description "{{ interface['description'] }}";
+        {% else %}
+        vlan-tagging;
+        {% endif %}
+        {% if 'mtu' in interface %}
+        mtu {{ interface['mtu'] }};
+        {% elif ifname.startswith('et-') or ifname.startswith('ae') %}
+        mtu 9216;
+        {% endif %}
+        {% if ('switched' in interface and interface['switched']) or ('routed' in interface and interface['routed']) %}
+        unit {{ unit }} {
+            {% if 'subinterface' in interface and interface['subinterface'] %}
+            description "{{ interface['description'] }}";
+            vlan-id {{ interface["vlan_tag"] }};
+            {% endif %}
+            {% if 'routed' in interface and interface['routed'] %}
+            {% if 'ipv4' in interface and interface['ipv4']|length %}
+            family inet {
+                {% for ip in interface['ipv4'] %}
+                address {{ ip }};
+                {% endfor %}
+            }
+            {% endif %}
+            {% if 'ipv6' in interface and interface['ipv6']|length %}
+            family inet6 {
+                {% for ip in interface['ipv6'] %}
+                address {{ ip }};
+                {% endfor %}
+            }
+            {% endif %}
+            {% endif %}
+            {% if 'switched' in interface and interface['switched'] %}
+            family ethernet-switching {
+                interface-mode {{ interface['l2mode'] }};
+                vlan {
+                    {% if interface['l2mode'] == 'access' %}
+                    members {{ interface['vlans'] }};
+                    {% else %}
+                    members [ {% for vlan in interface['vlans'] %}{{ vlan }} {% endfor %}];
+                    {% endif %}
+                }
+                {% if interface['l2mode'] == 'access' %}
+                storm-control default;
+                recovery-timeout 600;
+                {% endif %}
+            }
+            {% endif %}
+        }
+        {% endif %}
+        {% endif %}
+    }
+    {% endfor %}
+}
+{% for interface in config['interfaces'] if not interface['name'] in config['lacp_interfaces'] and 'vrf' in interface %}
+routing-instances {
+    {{ interface['vrf'] }} {
+        interface {{ interface['name'] }};
+    }
+}
+{% endfor %}

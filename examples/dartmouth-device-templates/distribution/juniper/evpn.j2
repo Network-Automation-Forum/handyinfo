@@ -1,0 +1,132 @@
+protocols {
+    evpn {
+        encapsulation vxlan;
+        multicast-mode ingress-replication;
+        extended-vni-list all;
+        default-gateway no-gateway-community;
+        duplicate-mac-detection {
+            detection-threshold 20;
+            detection-window 5;
+            auto-recovery-time 5;
+        }
+    }
+}
+policy-options {
+{% for vrf in config['vrfs'] %}
+  {% if 'rd' in vrf and vrf['rd'] != None %}
+    community {{ vrf['name'] }}-vrf members target:{{ config['evpn']['target_asn'] }}:{{ vrf['rd'] }};
+  {% endif %}
+{% endfor %}
+    community evpn-switching members target:{{ config['evpn']['target_asn'] }}:{{ config['evpn']['target_switching_rd'] }};
+    policy-statement evpn-switching {
+        term layer2 {
+            from community evpn-switching;
+            then accept;
+        }
+        term default-deny {
+            then reject;
+        }
+    }
+}
+switch-options {
+    vtep-source-interface lo0.0;
+    route-distinguisher {{ config['router_id'] }}:{{ config['evpn']['target_switching_rd'] }};
+    vrf-import evpn-switching;
+    vrf-target {
+        target:{{ config['evpn']['target_asn'] }}:{{ config['evpn']['target_switching_rd'] }};
+        auto;
+    }
+}
+policy-options {
+{% for vrf in config['vrfs'] %}
+  {% if 'rd' in vrf and vrf['rd'] != None %}
+    policy-statement {{ vrf['name'] }}-vrf-export {
+        term {{ vrf['name'] }}-networks {
+            {% for int in config['interfaces'] if not int['name'] in config['lacp_interfaces'] %}
+            {% if int['enabled'] and 'vrf' in int and int['vrf'] == vrf['name'] %}
+            from interface {{ int['name'] }};
+            {% endif %}
+            {% endfor %}
+            then {
+                community add {{ vrf['name'] }}-vrf;
+                accept;
+            }
+        }
+        term {{ vrf['name'] }}-local {
+            from {
+                protocol local;
+                route-filter 0.0.0.0/0 prefix-length-range /32-/32;
+            }
+            then {
+                community add {{ vrf['name'] }}-vrf;
+                accept;
+            }
+        }
+        term {{ vrf['name'] }}-BGP {
+            from {
+                protocol bgp;
+            }
+            then {
+                community add {{ vrf['name'] }}-vrf;
+                accept;
+            }
+        }
+{#
+        term {{ vrf['name'] }}-hosts {
+            from {
+                family evpn;
+                nlri-route-type [ 2 3 ];
+            }
+            then {
+                community add {{ vrf['name'] }}-vrf;
+                accept;
+            }
+        }
+#}
+        term default-reject {
+            then reject;
+        }
+    }
+    policy-statement {{ vrf['name'] }}-vrf-import {
+        term {{ vrf['name'] }}-vrf {
+            from community {{ vrf['name'] }}-vrf;
+            then accept;
+        }
+    }
+  {% endif %}
+{% endfor %}
+}
+
+{% for vrf in config['vrfs'] %}
+  {% if 'rd' in vrf and vrf['rd'] != None %}
+routing-instances {
+    {{ vrf['name'] }} {
+        instance-type vrf;
+        {% for int in config['interfaces'] if not int['name'] in config['lacp_interfaces'] %}
+        {% if int['enabled'] and 'vrf' in int and int['vrf'] == vrf['name'] %}
+        interface {{ int['name'] }};
+        {% endif %}
+        {% endfor %}
+        route-distinguisher {{ config['bgp']['overlay_device_id'] }}:{{ vrf['rd'] }};
+        vrf-import {{ vrf['name'] }}-vrf-import;
+        vrf-target target:{{ config['evpn']['target_asn'] }}:{{ vrf['rd'] }};
+        vrf-table-label;
+        routing-options {
+            multipath;
+        }
+        protocols {
+            evpn {
+                ip-prefix-routes {
+                    advertise direct-nexthop;
+                    encapsulation vxlan;
+                    vni {{ vrf['rd'] }};
+                    import {{ vrf['name'] }}-vrf-import;
+                    export {{ vrf['name'] }}-vrf-export;
+                }
+            }
+        }
+    }
+}
+  {% endif %}
+{% endfor %}
+
