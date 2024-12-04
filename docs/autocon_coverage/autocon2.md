@@ -10,8 +10,8 @@ A collection of links to AC2 related content.
 - Add a link to your content!
 
 ## Videos
-- AC2 presentation videos coming soon...
 - Add a link to your content!
+- AC2 presentation videos coming soon...
 
 ## Slides
-- AC2 slides coming soon...
+- All slides are [available for download](https://github.com/Network-Automation-Forum/handyinfo/tree/main/docs/autocon_coverage/slides/AutoCon2).
