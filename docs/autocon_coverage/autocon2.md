@@ -5,6 +5,7 @@ A collection of links to AC2 related content.
 ## Blogs
 - Add a link your content!
 - [AutoCon 2 Recap: The End of the Beginning - NetBox Labs](https://netboxlabs.com/blog/autocon2-recap/)
+- [Thoughts on Autocon2: A Bluesky thread - Jeff McAdams](https://bsky.app/profile/jeffmca.bsky.social/post/3lbrttisnys23)
 
 ## Podcasts
 - Add a link to your content!
