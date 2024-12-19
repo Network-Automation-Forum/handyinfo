@@ -1,0 +1,1547 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Information about network automation, orchestration, and observability that you just might find handy.">
+      
+      
+      
+      
+        <link rel="prev" href="../nornir/">
+      
+      
+        <link rel="next" href="../../autocon_coverage/autocon0/">
+      
+      
+      <link rel="icon" href="../../img/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.34">
+    
+    
+      
+        <title>Templating - Handy Info Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.35f28582.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#templating-in-automation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="https://networkautomation.forum/" title="Handy Info Docs" class="md-header__button md-logo" aria-label="Handy Info Docs" data-md-component="logo">
+      
+  <img src="../../img/NAF.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Handy Info Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Templating
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Network-Automation-Forum/handyinfo" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Network-Automation-Forum/handyinfo
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="https://networkautomation.forum/" title="Handy Info Docs" class="md-nav__button md-logo" aria-label="Handy Info Docs" data-md-component="logo">
+      
+  <img src="../../img/NAF.png" alt="logo">
+
+    </a>
+    Handy Info Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Network-Automation-Forum/handyinfo" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Network-Automation-Forum/handyinfo
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../StartHere/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Start Here
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Learning Materials
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Learning Materials
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../general/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    General
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Python
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../go/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    GoLang
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../git/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Git
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ansible/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ansible
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../terraform/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Terraform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../nornir/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Nornir
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Templating
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Templating
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#jinja-templating" class="md-nav__link">
+    <span class="md-ellipsis">
+      Jinja Templating
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Jinja Templating">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dartmouth-college" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dartmouth College
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/Network-Automation-Forum/handyinfo/tree/main/examples/dartmouth-device-templates" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dartmouth College Jinja2 Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    AutoCon Coverage
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            AutoCon Coverage
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../autocon_coverage/autocon0/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AutoCon0
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../autocon_coverage/autocon1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AutoCon1
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../autocon_coverage/autocon2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    AutoCon2
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#jinja-templating" class="md-nav__link">
+    <span class="md-ellipsis">
+      Jinja Templating
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Jinja Templating">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dartmouth-college" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dartmouth College
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="templating-in-automation">Templating in Automation</h1>
+<h2 id="jinja-templating">Jinja Templating</h2>
+<p>As you enter the automation world, you inevitably learn about Jinja templates.</p>
+<p><a href="https://jinja.palletsprojects.com/">Jinja</a> is a <strong>templating engine</strong> that, with the help of a programming language like Python, can be used to create network configuration like this:</p>
+<div class="highlight"><pre><span></span><code>interface GigabitEthernet0/1
+ description Uplink to ISP
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+!
+router ospf 1
+ network 192.168.1.0 0.0.0.255 area 0
+</code></pre></div>
+<p>From a template like this:</p>
+<div class="highlight"><pre><span></span><code>interface {{ interface_name }}
+ description {{ description }}
+ ip address {{ ip_address }} {{ subnet_mask }}
+{% if shutdown %}
+ shutdown
+{% else %}
+ no shutdown
+{% endif %}
+!
+router ospf {{ ospf_process_id }}
+ network {{ network }} {{ wildcard_mask }} area {{ area }}
+</code></pre></div>
+<p>This is a rudimentary example. However, you may be thinking,</p>
+<ul>
+<li>What if I have different platforms with different syntax?</li>
+<li>Can I do for-loops for interfaces?</li>
+<li>What about secret keys?</li>
+<li>How do I give the templates my variables in the first place?</li>
+</ul>
+<p>Questions like these are why examples can be helpful! This section is intended to be a landing area for examples across the network automation community. With enough examples, it gets easier to analyze and build what works for you and your institution.</p>
+<p>For those with templates already, this is your <a href="#contributing">call to action</a> to contribute your own examples!</p>
+<h3 id="dartmouth-college">Dartmouth College</h3>
+<p><a href="https://github.com/Network-Automation-Forum/handyinfo/tree/main/examples/dartmouth-device-templates">Github Link to Templates</a></p>
+<details class="quote">
+<summary>README</summary>
+<p><!-- BEGIN INCLUDE ../../examples/dartmouth-device-templates/README.md -->
+<strong>Date</strong>: September 9, 2024</p>
+<p><strong>Contact</strong>: networkengineers@dartmouth.onmicrosoft.com</p>
+<p>These templates are from Dartmouth College and are provided as examples
+of what we are currently using with our automated device deployments.
+Each update to a configuration does a 'config replace' of the existing
+configuration with the newly generated configuration.</p>
+<p>These templates will create an EVPN campus network using Juniper devices.</p>
+<p>The access layer devices generally do not route and are generally
+connected to two distribution routers via an ESI-LAG, or occassionally
+to the aggregation layer.  The access layer does not run EVPN.</p>
+<p>The aggregation layer devices do not route and are connected to two
+distribution routers via an ESI-LAG.  The aggregation layer does not
+run EVPN.</p>
+<p>The core routers create the spines of the underlay network for the
+distribution and services devices and run BGP route reflectors for the
+EVPN overlay networks.</p>
+<p>The distrubtion routers run EVPN and carry all VRFs that are relevant
+to any downstream devices and have anycast gateways for any routed
+downstream VLANs.</p>
+<p>The WAN routers connect to ISPs and the service nodes.  They do not
+run EVPN.</p>
+<p>The service nodes run EVPN and interconnect all of the VRFs.  They do not
+connect to any buildings.  The inter-VRF routing is done on a firewall
+that connects to the service node, but there are currently no templates
+for the firewalls.  The service nodes interconnect with each other
+via iBGP.  The service nodes also use BGP connect to Infoblox DNS/DHCP
+servers that advertise anycast DNS servers.  The service nodes also
+connect to any other internal BGP devices.</p>
+<p>These templates are intended to be used with a variable named 'config',
+which contains definitions for all of the template variables.  We create
+this dynamically based on information from NetBox.  When data from
+NetBox is turned into variables, any tag on an object will be added
+as <code>&lt;tag_name&gt;: &lt;bool&gt;</code> if the tag does not contain an '='.  If the tag
+contains and '=' then it will be added as <code>&lt;tag_name&gt;: &lt;value&gt;</code>, where
+<code>&lt;value&gt;</code> is the part after the '=' and <code>&lt;'tag_name'&gt;</code> is the part before the
+'='.  Examples of tags are <code>'can_have_phones'</code>, <code>'acl_eth_in=block-chatter'</code>,
+<code>'mtu=9216'</code>, <code>'forrc_100_full'</code>, and <code>'dhcp_snooping_trusted'</code>.  If you find
+fields in the templates that aren't listed below by name then they are
+probably set via tags.</p>
+<p>Some of the fields listed below will only be present if they are defined.</p>
+<p>For the various classes of devices the rough definition is expected to be:</p>
+<h1 id="access-and-aggregation">Access and Aggregation</h1>
+<div class="highlight"><pre><span></span><code>{ &#39;addresses&#39;: [],
+  &#39;basenames&#39;: [ &lt;interface_name&gt;, &lt;interface_name&gt;, ... ],
+  &#39;can_deploy&#39;: &lt;bool&gt;,
+  &#39;custom_config_text&#39;: &lt;config stanzas&gt;,
+  &#39;custom_fields&#39;: { &#39;ASN&#39;: &lt;ASN&gt;,
+                     &#39;System_MAC_Limit&#39;: &lt;int&gt;,
+                     &#39;building_code&#39;: &lt;text&gt;,
+                     &#39;config_frozen&#39;: &lt;bool&gt;,
+                     &#39;custom_config_text&#39;: &lt;config stanzas&gt;,
+                     &#39;in_maintenance_mode&#39;: &lt;bool&gt;,
+                     &#39;mist_site&#39;: &lt;text&gt;,
+                     &#39;mist_wired_assurance&#39;: &lt;&#39;enabled&#39;|&#39;disabled&#39;&gt;,
+                     &#39;stp_bridge_priority&#39;: &lt;int&gt;,
+                     &#39;vlan_group&#39;: &lt;text&gt;},
+  &#39;device_platform&#39;: &lt;device-model&gt;,
+  &#39;dhcp_servers&#39;: [&lt;ip&gt;, &lt;ip&gt;],
+  &#39;dhcp_vrf&#39;: &#39;&lt;VRF-name&gt;&#39;,
+  &#39;dns&#39;: { &#39;domainname&#39;: &lt;domain&gt;,
+           &#39;network-device-domainname&#39;: &lt;domain&gt;,
+           &#39;servers&#39;: [&lt;ip&gt;]},
+  &#39;fullnames&#39;: [ &lt;interface_name&gt;, &lt;interface_name&gt;, ... ],
+  &#39;has_phones&#39;: &lt;bool&gt;,
+  &#39;hostname&#39;: &lt;text&gt;,
+  &#39;interfaces&#39;: [ { &#39;description&#39;: &lt;text&gt;,
+                    &#39;enabled&#39;: &lt;bool&gt;,
+                    &#39;mode&#39;: &#39;access&#39;,
+                    &#39;name&#39;: &lt;interface_name&gt;,
+                    &#39;type&#39;: { &#39;label&#39;: &lt;interface_type_label&gt;,
+                              &#39;value&#39;: &lt;interface_type&gt;},
+                    &#39;vlans&#39;: &lt;vlan_name&gt;},
+                  { &#39;description&#39;: &lt;text&gt;,
+                    &#39;enabled&#39;: &lt;bool&gt;,
+                    &#39;mode&#39;: &#39;trunk&#39;,
+                    &#39;name&#39;: &lt;interface_name&gt;,
+                    &#39;native_vlan&#39;: &lt;vlan_name&gt;,
+                    &#39;type&#39;: { &#39;label&#39;: &lt;interface_type_label&gt;,
+                              &#39;value&#39;: &lt;interface_type&gt;},
+                    &#39;vlans&#39;: [&lt;vlan_name&gt;, &lt;vlan_name&gt;, ... ] },
+                  ... ],
+  &#39;lacp&#39;: [ {&#39;members&#39;: [&lt;interface_name&gt;, &lt;interface_name&gt;], &#39;name&#39;: &lt;lag_name&gt;}, ... ],
+  &#39;lacp_interfaces&#39;: [&lt;interface_name&gt;, &lt;interface_name&gt;, ... ],
+  &#39;lag_count&#39;: &lt;int&gt;,
+  &#39;mgmt_hosts&#39;: [ &lt;ip&gt;, &lt;ip&gt;, ... ],
+  &#39;mgmt_ip&#39;: { &#39;default_gateway&#39;: &lt;ip&gt;,
+               &#39;ip&#39;: &lt;ip&gt;,
+               &#39;mask&#39;: &lt;mask_length&gt;,
+               &#39;vlan&#39;: &lt;vlan_id&gt; },
+  &#39;monitors&#39;: {&#39;local&#39;: {}, &#39;remote&#39;: {}},
+  &#39;ntp&#39;: { &#39;servers&#39;: [ &lt;ip&gt;, &lt;ip&gt;, ... ],
+           &#39;timezone&#39;: &lt;timezone&gt; },
+  &#39;port_groups&#39;: {},
+  &#39;primary_ip4&#39;: None,
+  &#39;root&#39;: { &#39;password&#39;: &lt;passwd&gt; },
+  &#39;routed-vlans&#39;: [],
+  &#39;rstp_priority&#39;: &lt;int&gt;,
+  &#39;servers&#39;: [&lt;ip&gt;],
+  &#39;snmp&#39;: { &#39;communities&#39;: {&lt;community&gt;: [&lt;subnet&gt;]},
+            &#39;trap_receivers&#39;: [&lt;ip&gt;] },
+  &#39;snmp-v3&#39;: { &#39;authentication-password&#39;: &lt;passwd&gt;,
+               &#39;privacy-password&#39;: &lt;passwd&gt;,
+               &#39;target-address&#39;: &lt;ip&gt;,
+               &#39;target-name&#39;: &lt;text&gt;,
+               &#39;user-name&#39;: &lt;username&gt; },
+  &#39;snmp_location&#39;: &lt;text&gt;,
+  &#39;syslog&#39;: { &#39;messages_ignore&#39;: [ &lt;text&gt;, &lt;text&gt;, &lt;text&gt;, ... ],
+              &#39;servers&#39;: [&lt;ip&gt;, &lt;ip&gt;] },
+  &#39;tags&#39;: [],
+  &#39;users&#39;: { &lt;username&gt;: { &#39;class&#39;: &#39;super-user&#39;,
+                     &#39;ssh&#39;: &#39;ssh-rsa &#39;
+                            &lt;key&gt;
+                            &lt;description&gt;,
+                     &#39;uid&#39;: &lt;int&gt;},
+             ... },
+  &#39;vendor&#39;: &lt;device_vendor&gt;,
+  &#39;vendor_model&#39;: &lt;device_model&gt;,
+  &#39;virtual_chassis&#39;: [ { &#39;alias&#39;: &#39;0&#39;,
+                         &#39;priority&#39;: &#39;1&#39;,
+                         &#39;role&#39;: &#39;routing-engine&#39;,
+                         &#39;serial&#39;: &lt;text&gt;}],
+  &#39;vlans&#39;: [ { &#39;description&#39;: &lt;text&gt;,
+               &#39;name&#39;: &lt;text&gt;,
+               &#39;routed&#39;: &lt;bool&gt;,
+               &#39;tags&#39;: {&lt;name&gt;: &lt;value&gt;, ... },
+               &#39;vid&#39;: &lt;int&gt;,
+               &#39;vni&#39;: &lt;int&gt;},
+             ... ]
+}
+</code></pre></div>
+<h1 id="core">Core</h1>
+<div class="highlight"><pre><span></span><code>{ &#39;bgp&#39;: { &#39;keys&#39;: [ { &#39;secret&#39;: &lt;passwd&gt;,
+                       &#39;start&#39;: &lt;date-time&gt; }],
+           &#39;overlay_asn&#39;: &lt;ASN&gt;,
+           &#39;overlay_device_id&#39;: &lt;ip&gt;,
+           &#39;overlay_peers&#39;: [ {&#39;ip&#39;: &lt;peer-ip&gt;, &#39;name&#39;: &lt;peer-name&gt;}, ... ],
+           &#39;rr_cluster_id&#39;: &lt;ip&gt;,
+           &#39;underlay_asn&#39;: &lt;ASN&gt;,
+           &#39;underlay_peers&#39;: [ { &#39;asn&#39;: &lt;ASN&gt;, &#39;ip&#39;: &lt;peer-ip&gt;, &#39;name&#39;: &lt;peer-name&gt; }, ... ] },
+  &#39;can_deploy&#39;: &lt;bool&gt;,
+  &#39;config_frozen&#39;: &lt;bool&gt;,
+  &#39;device_platform&#39;: &lt;device-model&gt;,
+  &#39;device_role&#39;: &#39;Core&#39;,
+  &#39;dhcp_servers&#39;: [&lt;ip&gt;, &lt;ip&gt;],
+  &#39;dhcp_vrf&#39;: &#39;&lt;VRF-name&gt;&#39;,
+  &#39;dns&#39;: { &#39;domainname&#39;: &lt;domain&gt;,
+           &#39;network-device-domainname&#39;: &lt;domain&gt;,
+           &#39;servers&#39;: [&lt;ip&gt;]},
+  &#39;evpn&#39;: {&#39;target_asn&#39;: &lt;ASN&gt;, &#39;target_switching_rd&#39;: &lt;int&gt;},
+  &#39;hostname&#39;: &lt;text&gt;,
+  &#39;in_maintenance_mode&#39;: &lt;bool&gt;,
+  &#39;interfaces&#39;: [ { &#39;description&#39;: &lt;text&gt;,
+                    &#39;enabled&#39;: &lt;bool&gt;,
+                    &#39;ipv4&#39;: [&lt;ip&gt;],
+                    &#39;ipv6&#39;: [],
+                    &#39;mtu&#39;: &lt;int&gt;,
+                    &#39;name&#39;: &lt;interface-name&gt;,
+                    &#39;routed&#39;: &lt;bool&gt;,
+                    &#39;type&#39;: { &#39;label&#39;: &lt;interface_type_label&gt;,
+                              &#39;value&#39;: &lt;interface_type&gt; },
+                  {&#39;name&#39;: &lt;interface-name&gt;, &#39;unused&#39;: True},
+                  ... ],
+  &#39;lag_count&#39;: 0,
+  &#39;mgmt_hosts&#39;: [ &lt;ip&gt;, &lt;ip&gt;, ... ],
+  &#39;mgmt_ip&#39;: { &#39;default_gateway&#39;: &lt;ip&gt;,
+               &#39;ip&#39;: &lt;ip&gt;,
+               &#39;mask&#39;: &lt;mask_length&gt;,
+               &#39;vlan&#39;: &lt;vlan_id&gt; },
+  &#39;ntp&#39;: { &#39;servers&#39;: [ &lt;ip&gt;, &lt;ip&gt;, ... ],
+           &#39;timezone&#39;: &lt;timezone&gt; },
+  &#39;port_groups&#39;: { &lt;port-id&gt;: &lt;port-speed&gt;,
+                   ... },
+  &#39;root&#39;: { &#39;password&#39;: &lt;passwd&gt; },
+  &#39;router_id&#39;: &lt;ip&gt;,
+  &#39;servers&#39;: [&lt;ip&gt;],
+  &#39;snmp&#39;: { &#39;communities&#39;: {&lt;community&gt;: [&lt;subnet&gt;]},
+            &#39;trap_receivers&#39;: [&lt;ip&gt;] },
+  &#39;snmp-v3&#39;: { &#39;authentication-password&#39;: &lt;passwd&gt;,
+               &#39;privacy-password&#39;: &lt;passwd&gt;,
+               &#39;target-address&#39;: &lt;ip&gt;,
+               &#39;target-name&#39;: &lt;text&gt;,
+               &#39;user-name&#39;: &lt;username&gt; },
+  &#39;snmp_location&#39;: &lt;text&gt;,
+  &#39;syslog&#39;: { &#39;facility&#39;: &lt;syslog_level&gt;,
+              &#39;messages_ignore&#39;: [ &lt;text&gt;, &lt;text&gt;, &lt;text&gt;, ... ],
+              &#39;servers&#39;: [&lt;ip&gt;, &lt;ip&gt;] },
+  &#39;underlay_loopbacks&#39;: [&lt;subnet&gt;],
+  &#39;underlay_transport&#39;: [&lt;subnet&gt;],
+  &#39;users&#39;: { &lt;username&gt;: { &#39;class&#39;: &#39;super-user&#39;,
+                     &#39;ssh&#39;: &#39;ssh-rsa &#39;
+                            &lt;key&gt;
+                            &lt;description&gt;,
+                     &#39;uid&#39;: &lt;int&gt;},
+             ... },
+  &#39;vendor&#39;: &lt;device_vendor&gt;,
+  &#39;vendor_model&#39;: &lt;device_model&gt;
+}
+</code></pre></div>
+<h1 id="distribution">Distribution</h1>
+<div class="highlight"><pre><span></span><code>{ &#39;autoirbs&#39;: [ { &#39;description&#39;: &lt;text&gt;,
+                  &#39;enabled&#39;: True,
+                  &#39;gateway&#39;: &lt;ip&gt;,
+                  &#39;gateway_ipv6&#39;: &lt;ip&gt;,
+                  &#39;gw_mac&#39;: &lt;mac-address&gt;,
+                  &#39;label&#39;: &#39;&#39;,
+                  &#39;mac_address&#39;: &#39;&#39;,
+                  &#39;mode&#39;: {&#39;label&#39;: &#39;Access&#39;, &#39;value&#39;: &#39;access&#39;},
+                  &#39;mtu&#39;: &#39;&#39;,
+                  &#39;name&#39;: &lt;interface-name&gt;,
+                  &#39;native_vlan&#39;: &lt;vlan-name&gt;,
+                  &#39;routed&#39;: True,
+                  &#39;tags&#39;: [],
+                  &#39;type&#39;: {&#39;label&#39;: &#39;Virtual&#39;, &#39;value&#39;: &#39;virtual&#39;},
+                  &#39;vrf&#39;: &lt;vrf-name&gt; },
+                ... ],
+  &#39;bgp&#39;: { &#39;keys&#39;: [ { &#39;secret&#39;: &lt;passwd&gt;,
+                       &#39;start&#39;: &lt;date-time&gt; } ],
+           &#39;overlay_asn&#39;: &lt;ASN&gt;,
+           &#39;overlay_device_id&#39;: &lt;ip&gt;,
+           &#39;overlay_peers&#39;: [ {&#39;ip&#39;: &lt;ip&gt;, &#39;name&#39;: &lt;peer-name&gt;}, ... ],
+           &#39;rr_cluster_id&#39;: &lt;ip&gt;,
+           &#39;underlay_asn&#39;: &lt;ASN&gt;,
+           &#39;underlay_peers&#39;: [ { &#39;asn&#39;: &lt;ASN&gt;,
+                                 &#39;ip&#39;: &lt;ip&gt;,
+                                 &#39;name&#39;: &lt;peer-name&gt; },
+                               ... ] },
+  &#39;can_deploy&#39;: &lt;bool&gt;,
+  &#39;config_frozen&#39;: &lt;bool&gt;,
+  &#39;connected_devices&#39;: [ { &#39;local_interface&#39;: &lt;interface-name&gt;,
+                           &#39;name&#39;: &lt;neighbor-device-name&gt;,
+                           &#39;role&#39;: &lt;neighbor-device-role&gt;,
+                           &#39;vlans&#39;: [ { &#39;description&#39;: &lt;text&gt;,
+                                        &#39;name&#39;: &lt;vlan-name&gt;,
+                                        &#39;tags&#39;: [&lt;tag&gt;, &lt;tag&gt;, ... ],
+                                        &#39;vid&#39;: &lt;int&gt;,
+                                        &#39;vni&#39;: &lt;int&gt; },
+                                      ... ] },
+                         ... ],
+  &#39;custom_config_text&#39;: &lt;text&gt;,
+  &#39;device_platform&#39;: &lt;device-model&gt;,
+  &#39;device_role&#39;: &#39;Distribution&#39;,
+  &#39;dhcp_servers&#39;: [&lt;ip&gt;, &lt;ip&gt;],
+  &#39;dhcp_vrf&#39;: &#39;&lt;VRF-name&gt;&#39;,
+  &#39;dns&#39;: { &#39;domainname&#39;: &lt;domain&gt;,
+           &#39;network-device-domainname&#39;: &lt;domain&gt;,
+           &#39;servers&#39;: [&lt;ip&gt;]},
+  &#39;evpn&#39;: {&#39;target_asn&#39;: &lt;ASN&gt;, &#39;target_switching_rd&#39;: &lt;int&gt;},
+  &#39;hostname&#39;: &lt;text&gt;,
+  &#39;in_maintenance_mode&#39;: &lt;bool&gt;,
+  &#39;interfaces&#39;: [ { &#39;description&#39;: &lt;text&gt;,
+                    &#39;enabled&#39;: True,
+                    &#39;ipv4&#39;: [&lt;ip&gt;],
+                    &#39;ipv6&#39;: [],
+                    &#39;name&#39;: &lt;interface-name&gt;,
+                    &#39;routed&#39;: True,
+                    &#39;type&#39;: { &#39;label&#39;: &lt;interface_type_label&gt;,
+                              &#39;value&#39;: &lt;interface_type&gt; } },
+                  { &#39;description&#39;: &lt;text&gt;,
+                    &#39;enabled&#39;: True,
+                    &#39;ipv4&#39;: [],
+                    &#39;ipv6&#39;: [],
+                    &#39;name&#39;: &lt;interface-name&gt;,
+                    &#39;type&#39;: { &#39;label&#39;: &lt;interface_type_label&gt;,
+                              &#39;value&#39;: &lt;interface_type&gt; } },
+                  {&#39;name&#39;: &lt;interface-name&gt;, &#39;unused&#39;: True},
+                  { &#39;description&#39;: &lt;text&gt;,
+                    &#39;enabled&#39;: &lt;bool&gt;,
+                    &#39;ipv4&#39;: [],
+                    &#39;ipv6&#39;: [],
+                    &#39;mac_address&#39;: &lt;mac-address&gt;,
+                    &#39;mode&#39;: &#39;trunk&#39;,
+                    &#39;name&#39;: &lt;lag-name&gt;,
+                    &#39;switched&#39;: True,
+                    &#39;type&#39;: { &#39;label&#39;: &#39;Link Aggregation Group (LAG)&#39;,
+                              &#39;value&#39;: &#39;lag&#39;},
+                    &#39;vlans&#39;: [ &lt;vlan-name&gt;, &lt;vlan-name&gt;, ... ] },
+                  { &#39;description&#39;: &#39;&#39;,
+                    &#39;enabled&#39;: &lt;bool&gt;,
+                    &#39;ipv4&#39;: [&lt;ip&gt;],
+                    &#39;ipv6&#39;: [&lt;ip&gt;],
+                    &#39;name&#39;: &lt;interface-name&gt;,
+                    &#39;routed&#39;: True,
+                    &#39;type&#39;: {&#39;label&#39;: &#39;Virtual&#39;, &#39;value&#39;: &#39;virtual&#39;},
+                    &#39;vrf&#39;: &lt;vrf-name&gt; },
+                  { &#39;description&#39;: &lt;text&gt;,
+                    &#39;enabled&#39;: &lt;bool&gt;,
+                    &#39;gateway&#39;: &lt;ip&gt;,
+                    &#39;gateway_ipv6&#39;: &lt;ip&gt;,
+                    &#39;gw_mac&#39;: &lt;mac-address&gt;,
+                    &#39;label&#39;: &#39;&#39;,
+                    &#39;mac_address&#39;: &#39;&#39;,
+                    &#39;mode&#39;: {&#39;label&#39;: &#39;Access&#39;, &#39;value&#39;: &#39;access&#39;},
+                    &#39;mtu&#39;: &#39;&#39;,
+                    &#39;name&#39;: &lt;interface-name&gt;,
+                    &#39;native_vlan&#39;: &lt;vlan-name&gt;,
+                    &#39;routed&#39;: True,
+                    &#39;tags&#39;: [],
+                    &#39;type&#39;: {&#39;label&#39;: &#39;Virtual&#39;, &#39;value&#39;: &#39;virtual&#39;},
+                    &#39;vrf&#39;: &lt;vrf-name&gt; },
+                  ... ],
+  &#39;lacp&#39;: [ { &#39;lacp_id&#39;: &lt;mac-address&gt;,
+              &#39;members&#39;: [&lt;interface-name&gt;],
+              &#39;name&#39;: &lt;lag-name&gt;,
+              &#39;tags&#39;: [] },
+            ... ],
+  &#39;lacp_interfaces&#39;: [&lt;interface_name&gt;, &lt;interface_name&gt;, ... ],
+  &#39;lag_count&#39;: &lt;int&gt;,
+  &#39;loopback_ips&#39;: [ {&#39;address&#39;: &lt;ip&gt;, &#39;vrf&#39;: &lt;vrf-name&gt;}, ... ],
+  &#39;mgmt_hosts&#39;: [ &lt;ip&gt;, &lt;ip&gt;, ... ],
+  &#39;mgmt_ip&#39;: { &#39;default_gateway&#39;: &lt;ip&gt;,
+               &#39;ip&#39;: &lt;ip&gt;,
+               &#39;mask&#39;: &lt;mask_length&gt;,
+               &#39;vlan&#39;: &lt;vlan_id&gt; },
+  &#39;multicast_rp&#39;: { &lt;vrf-name&gt;: &lt;ip&gt;, ... },
+  &#39;ntp&#39;: { &#39;servers&#39;: [ &lt;ip&gt;, &lt;ip&gt;, ... ],
+           &#39;timezone&#39;: &lt;timezone&gt; },
+  &#39;peers&#39;: [ { &#39;device&#39;: &lt;peer-name&gt;,
+               &#39;interface&#39;: &lt;remote-interface-name&gt;,
+               &#39;local_interface&#39;: &lt;local-interface-name&gt; },
+             ... ],
+  &#39;port_groups&#39;: { &lt;port-id&gt;: &lt;port-speed&gt;,
+                   ... },
+  &#39;root&#39;: { &#39;password&#39;: &lt;passwd&gt; },
+  &#39;router_id&#39;: &lt;ip&gt;,
+  &#39;rstp_priority&#39;: &lt;int&gt;,
+  &#39;servers&#39;: [&lt;ip&gt;],
+  &#39;snmp&#39;: { &#39;communities&#39;: {&lt;community&gt;: [&lt;subnet&gt;]},
+            &#39;trap_receivers&#39;: [&lt;ip&gt;] },
+  &#39;snmp-v3&#39;: { &#39;authentication-password&#39;: &lt;passwd&gt;,
+               &#39;privacy-password&#39;: &lt;passwd&gt;,
+               &#39;target-address&#39;: &lt;ip&gt;,
+               &#39;target-name&#39;: &lt;text&gt;,
+               &#39;user-name&#39;: &lt;username&gt; },
+  &#39;snmp_location&#39;: &lt;text&gt;,
+  &#39;syslog&#39;: { &#39;facility&#39;: &lt;syslog_level&gt;,
+              &#39;messages_ignore&#39;: [ &lt;text&gt;, &lt;text&gt;, &lt;text&gt;, ... ],
+              &#39;servers&#39;: [&lt;ip&gt;, &lt;ip&gt;] },
+  &#39;underlay_loopbacks&#39;: [&lt;subnet&gt;],
+  &#39;underlay_transport&#39;: [&lt;subnet&gt;],
+  &#39;users&#39;: { &lt;username&gt;: { &#39;class&#39;: &#39;super-user&#39;,
+                     &#39;ssh&#39;: &#39;ssh-rsa &#39;
+                            &lt;key&gt;
+                            &lt;description&gt;,
+                     &#39;uid&#39;: &lt;int&gt;},
+             ... },
+  &#39;vendor&#39;: &lt;device_vendor&gt;,
+  &#39;vendor_model&#39;: &lt;device_model&gt;,
+  &#39;vids&#39;: { &lt;vlan-name&gt;: &lt;int&gt;, &lt;vlan-name&gt;: &lt;int&gt;, ... },
+  &#39;vlans&#39;: [ { &#39;description&#39;: &lt;text&gt;,
+               &#39;name&#39;: &lt;text&gt;,
+               &#39;vid&#39;: &lt;int&gt;,
+               &#39;vni&#39;: &lt;int&gt; },
+             { &#39;description&#39;: &lt;text&gt;,
+               &#39;name&#39;: &lt;text&gt;,
+               &#39;routed&#39;: True,
+               &#39;tags&#39;: [&lt;tag&gt;, &lt;tag&gt;, ... ],
+               &#39;vid&#39;: &lt;int&gt;,
+               &#39;vni&#39;: &lt;int&gt; },
+             ... ],
+  &#39;vrfs&#39;: [ { &#39;ipv4_filtered_prefixes&#39;: {},
+              &#39;ipv6_filtered_prefixes&#39;: {},
+              &#39;name&#39;: &lt;vrf_name&gt;,
+              &#39;rd&#39;: &lt;int&gt;},
+            { &#39;ipv4_filtered_prefixes&#39;: {&lt;tag&gt;: [&lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ]},
+              &#39;ipv6_filtered_prefixes&#39;: {},
+              &#39;name&#39;: &lt;vrf_name&gt;,
+              &#39;rd&#39;: &lt;int&gt;},
+            ... ]
+}
+</code></pre></div>
+<h1 id="services">Services</h1>
+<div class="highlight"><pre><span></span><code>{ &#39;bgp&#39;: { &#39;auth&#39;: [ { &#39;ip&#39;: &lt;ip&gt;,
+                       &#39;key&#39;: &lt;passwd&gt;,
+                       &#39;peer&#39;: &lt;peer-name&gt; },
+                     ... ],
+           &#39;bgp_networks&#39;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+           &#39;default_ipv4_filter&#39;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+           &#39;default_ipv6_filter&#39;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+           &#39;keys&#39;: [ { &#39;secret&#39;: &lt;passwd&gt;,
+                       &#39;start&#39;: &lt;date-time&gt; } ],
+           &#39;overlay_asn&#39;: &lt;ASN&gt;,
+           &#39;overlay_device_id&#39;: &lt;ip&gt;,
+           &#39;overlay_peers&#39;: [ {&#39;ip&#39;: &lt;ip&gt;, &#39;name&#39;: &lt;peer-name&gt;}, ... ],
+           &#39;public_ipv4_filter&#39;: [ &lt;ip-prefix&gt; ],
+           &#39;public_ipv6_filter&#39;: [ &lt;ip-prefix&gt; ],
+           &#39;rr_cluster_id&#39;: &lt;ip&gt;,
+           &#39;underlay_asn&#39;: &lt;ASN&gt;,
+           &#39;underlay_peers&#39;: [ { &#39;asn&#39;: &lt;ASN&gt;,
+                                 &#39;ip&#39;: &lt;ip&gt;,
+                                 &#39;name&#39;: &lt;peer-name&gt; },
+                               ... ] },
+           &#39;vrf_peers&#39;: { &#39;dns_peers&#39;: [ { &#39;asn&#39;: &lt;ASN&gt;,
+                                           &#39;ip&#39;: &lt;ip&gt;,
+                                           &#39;name&#39;: &lt;peer-description&gt;,
+                                           &#39;vrf&#39;: &lt;vrf-name&gt; },
+                                         ... ],
+                          &#39;firewall_peers&#39;: [ { &#39;asn&#39;: &lt;ASN&gt;,
+                                                &#39;ip&#39;: &lt;ip&gt;,
+                                                &#39;name&#39;: &lt;peer-description&gt;,
+                                                &#39;trusted&#39;: &lt;bool&gt;,
+                                                &#39;vrf&#39;: &lt;vrf-name&gt; },
+                                              ... ],
+                          &#39;ibgp_peers&#39;: [ { &#39;ip&#39;: &lt;ip&gt;,
+                                            &#39;name&#39;: &lt;peer-description&gt;,
+                                            &#39;trusted&#39;: &lt;bool&gt;,
+                                            &#39;vrf&#39;: &lt;vrf-name&gt; },
+                                          ... ],
+                          &#39;isp_peers&#39;: [ { &#39;asn&#39;: &lt;ASN&gt;,
+                                           &#39;filter&#39;: &lt;tag-name&gt;,
+                                           &#39;ip&#39;: &lt;ip&gt;,
+                                           &#39;name&#39;: &lt;peer-description&gt;,
+                                           &#39;vrf&#39;: &lt;vrf-name&gt; },
+                                         ... ],
+                          &#39;other_peers&#39;: [ { &#39;asn&#39;: &lt;ASN&gt;,
+                                             &#39;filter&#39;: &lt;tag-name&gt;,
+                                             &#39;ip&#39;: &lt;ip&gt;,
+                                             &#39;name&#39;: &lt;peer-description&gt;,
+                                             &#39;trusted&#39;: &lt;bool&gt;,
+                                             &#39;vrf&#39;: &lt;vrf-name&gt; },
+                                           ... ],
+                          &#39;self_peers&#39;: [ { &#39;ip&#39;: &lt;ip&gt;,
+                                            &#39;remote-vrf&#39;: &#39;Internet&#39;,
+                                            &#39;trusted&#39;: &lt;bool&gt;,
+                                            &#39;vrf&#39;: &lt;vrf-name&gt; },
+                                          ... ],
+                          &#39;wan_peers&#39;: [ { &#39;asn&#39;: &lt;ASN&gt;,
+                                           &#39;ip&#39;: &lt;ip&gt;,
+                                           &#39;name&#39;: &lt;peer-description&gt;,
+                                           &#39;trusted&#39;: &lt;bool&gt;},
+                                         ... ],
+  &#39;can_deploy&#39;: &lt;bool&gt;,
+  &#39;config_frozen&#39;: &lt;bool&gt;,
+  &#39;custom_config_text&#39;: &lt;text&gt;,
+  &#39;device_platform&#39;: &lt;device-model&gt;,
+  &#39;device_role&#39;: &#39;Distribution&#39;,
+  &#39;dhcp_servers&#39;: [&lt;ip&gt;, &lt;ip&gt;],
+  &#39;dhcp_vrf&#39;: &#39;&lt;VRF-name&gt;&#39;,
+  &#39;dns&#39;: { &#39;domainname&#39;: &lt;domain&gt;,
+           &#39;network-device-domainname&#39;: &lt;domain&gt;,
+           &#39;servers&#39;: [&lt;ip&gt;]},
+  &#39;evpn&#39;: {&#39;target_asn&#39;: &lt;ASN&gt;, &#39;target_switching_rd&#39;: &lt;int&gt;},
+  &#39;hostname&#39;: &lt;text&gt;,
+  &#39;in_maintenance_mode&#39;: &lt;bool&gt;,
+  &#39;interfaces&#39;: [ { &#39;description&#39;: &lt;text&gt;,
+                    &#39;enabled&#39;: True,
+                    &#39;ipv4&#39;: [&lt;ip&gt;],
+                    &#39;ipv6&#39;: [],
+                    &#39;name&#39;: &lt;interface-name&gt;,
+                    &#39;routed&#39;: True,
+                    &#39;type&#39;: { &#39;label&#39;: &lt;interface_type_label&gt;,
+                              &#39;value&#39;: &lt;interface_type&gt; } },
+                  { &#39;description&#39;: &lt;text&gt;,
+                    &#39;enabled&#39;: True,
+                    &#39;ipv4&#39;: [],
+                    &#39;ipv6&#39;: [],
+                    &#39;name&#39;: &lt;interface-name&gt;,
+                    &#39;type&#39;: { &#39;label&#39;: &lt;interface_type_label&gt;,
+                              &#39;value&#39;: &lt;interface_type&gt; } },
+                  {&#39;name&#39;: &lt;interface-name&gt;, &#39;unused&#39;: True},
+                  { &#39;description&#39;: &lt;text&gt;,
+                    &#39;enabled&#39;: &lt;bool&gt;,
+                    &#39;ipv4&#39;: [],
+                    &#39;ipv6&#39;: [],
+                    &#39;mac_address&#39;: &lt;mac-address&gt;,
+                    &#39;mode&#39;: &#39;trunk&#39;,
+                    &#39;name&#39;: &lt;lag-name&gt;,
+                    &#39;switched&#39;: True,
+                    &#39;type&#39;: { &#39;label&#39;: &#39;Link Aggregation Group (LAG)&#39;,
+                              &#39;value&#39;: &#39;lag&#39;},
+                    &#39;vlans&#39;: [ &lt;vlan-name&gt;, &lt;vlan-name&gt;, ... ] },
+                  { &#39;description&#39;: &#39;&#39;,
+                    &#39;enabled&#39;: &lt;bool&gt;,
+                    &#39;ipv4&#39;: [&lt;ip&gt;],
+                    &#39;ipv6&#39;: [&lt;ip&gt;],
+                    &#39;name&#39;: &lt;interface-name&gt;,
+                    &#39;routed&#39;: True,
+                    &#39;type&#39;: {&#39;label&#39;: &#39;Virtual&#39;, &#39;value&#39;: &#39;virtual&#39;},
+                    &#39;vrf&#39;: &lt;vrf-name&gt; },
+                  { &#39;description&#39;: &lt;text&gt;,
+                    &#39;enabled&#39;: &lt;bool&gt;,
+                    &#39;gateway&#39;: &lt;ip&gt;,
+                    &#39;gateway_ipv6&#39;: &lt;ip&gt;,
+                    &#39;gw_mac&#39;: &lt;mac-address&gt;,
+                    &#39;label&#39;: &#39;&#39;,
+                    &#39;mac_address&#39;: &#39;&#39;,
+                    &#39;mode&#39;: {&#39;label&#39;: &#39;Access&#39;, &#39;value&#39;: &#39;access&#39;},
+                    &#39;mtu&#39;: &#39;&#39;,
+                    &#39;name&#39;: &lt;interface-name&gt;,
+                    &#39;native_vlan&#39;: &lt;vlan-name&gt;,
+                    &#39;routed&#39;: True,
+                    &#39;tags&#39;: [],
+                    &#39;type&#39;: {&#39;label&#39;: &#39;Virtual&#39;, &#39;value&#39;: &#39;virtual&#39;},
+                    &#39;vrf&#39;: &lt;vrf-name&gt; },
+                  ... ],
+  &#39;lacp&#39;: [ { &#39;lacp_id&#39;: &lt;mac-address&gt;,
+              &#39;members&#39;: [&lt;interface-name&gt;],
+              &#39;name&#39;: &lt;lag-name&gt;,
+              &#39;tags&#39;: [] },
+            ... ],
+  &#39;lacp_interfaces&#39;: [&lt;interface_name&gt;, &lt;interface_name&gt;, ... ],
+  &#39;lag_count&#39;: &lt;int&gt;,
+  &#39;loopback_ips&#39;: [ {&#39;address&#39;: &lt;ip&gt;, &#39;vrf&#39;: &lt;vrf-name&gt;}, ... ],
+  &#39;mgmt_hosts&#39;: [ &lt;ip&gt;, &lt;ip&gt;, ... ],
+  &#39;mgmt_ip&#39;: { &#39;default_gateway&#39;: &lt;ip&gt;,
+               &#39;ip&#39;: &lt;ip&gt;,
+               &#39;mask&#39;: &lt;mask_length&gt;,
+               &#39;vlan&#39;: &lt;vlan_id&gt; },
+  &#39;multicast_rp&#39;: { &lt;vrf-name&gt;: &lt;ip&gt;, ... },
+  &#39;network_announcements&#39;: { &#39;announce_network&#39;: [ { &#39;children&#39;: &lt;int&gt;,
+                                                     &#39;family&#39;: [IPv4|IPv6],
+                                                     &#39;network&#39;: &lt;ip-prefix&gt; },
+                                                   ... ],
+                             &#39;announce_wan_network&#39;: [ { &#39;children&#39;: &lt;int&gt;,
+                                                         &#39;family&#39;: [IPv4|IPv6],
+                                                         &#39;network&#39;: &lt;ip-prefix&gt; },
+                                                       ... ],
+  &#39;ntp&#39;: { &#39;servers&#39;: [ &lt;ip&gt;, &lt;ip&gt;, ... ],
+           &#39;timezone&#39;: &lt;timezone&gt; },
+  &#39;port_groups&#39;: { &lt;port-id&gt;: &lt;port-speed&gt;,
+                   ... },
+  &#39;rds&#39;: { &lt;vrf-name&gt;: &lt;int&gt;, &lt;vrf-name&gt;: &lt;int&gt;, ... },
+  &#39;root&#39;: { &#39;password&#39;: &lt;passwd&gt; },
+  &#39;router_id&#39;: &lt;ip&gt;,
+  &#39;rstp_priority&#39;: &lt;int&gt;,
+  &#39;servers&#39;: [&lt;ip&gt;],
+  &#39;snmp&#39;: { &#39;communities&#39;: {&lt;community&gt;: [&lt;subnet&gt;]},
+            &#39;trap_receivers&#39;: [&lt;ip&gt;] },
+  &#39;snmp-v3&#39;: { &#39;authentication-password&#39;: &lt;passwd&gt;,
+               &#39;privacy-password&#39;: &lt;passwd&gt;,
+               &#39;target-address&#39;: &lt;ip&gt;,
+               &#39;target-name&#39;: &lt;text&gt;,
+               &#39;user-name&#39;: &lt;username&gt; },
+  &#39;snmp_location&#39;: &lt;text&gt;,
+  &#39;syslog&#39;: { &#39;facility&#39;: &lt;syslog_level&gt;,
+              &#39;messages_ignore&#39;: [ &lt;text&gt;, &lt;text&gt;, &lt;text&gt;, ... ],
+              &#39;servers&#39;: [&lt;ip&gt;, &lt;ip&gt;] },
+  &#39;transit_vrf&#39;: &lt;vrf-name&gt;,
+  &#39;underlay_loopbacks&#39;: [&lt;subnet&gt;],
+  &#39;underlay_transport&#39;: [&lt;subnet&gt;],
+  &#39;users&#39;: { &lt;username&gt;: { &#39;class&#39;: &#39;super-user&#39;,
+                     &#39;ssh&#39;: &#39;ssh-rsa &#39;
+                            &lt;key&gt;
+                            &lt;description&gt;,
+                     &#39;uid&#39;: &lt;int&gt;},
+             ... },
+  &#39;vendor&#39;: &lt;device_vendor&gt;,
+  &#39;vendor_model&#39;: &lt;device_model&gt;,
+  &#39;vlans&#39;: [ { &#39;description&#39;: &lt;text&gt;,
+               &#39;name&#39;: &lt;text&gt;,
+               &#39;vid&#39;: &lt;int&gt;,
+               &#39;vni&#39;: &lt;int&gt; },
+             { &#39;description&#39;: &lt;text&gt;,
+               &#39;name&#39;: &lt;text&gt;,
+               &#39;routed&#39;: True,
+               &#39;tags&#39;: [&lt;tag&gt;, &lt;tag&gt;, ... ],
+               &#39;vid&#39;: &lt;int&gt;,
+               &#39;vni&#39;: &lt;int&gt; },
+             ... ],
+  &#39;vrfs&#39;: [ { &#39;default_announce&#39;: &lt;bool&gt;,
+              &#39;default_receive&#39;: &lt;bool&gt;,
+              &#39;ipv4_filtered_prefixes&#39;: { &lt;tag&gt;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+                                          &lt;tag&gt;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+                                          ... },
+              &#39;ipv4_other_prefixes&#39;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+              &#39;ipv4_routed_prefixes&#39;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+              &#39;ipv6_filtered_prefixes&#39;: { &lt;tag&gt;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+                                          &lt;tag&gt;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+                                          ... },
+              &#39;ipv6_other_prefixes&#39;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+              &#39;ipv6_routed_prefixes&#39;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+              &#39;leak_vrf&#39;: &lt;bool&gt;,
+              &#39;name&#39;: &lt;vrf-name&gt;,
+              &#39;rd&#39;: &lt;int&gt;,
+              &#39;receive_leaks&#39;: &lt;bool&gt;,
+              &#39;strict_filtering&#39;: &lt;bool&gt; },
+              &#39;tags&#39;: [ &lt;tag&gt;, &lt;tag&gt;, ... ] },
+            ... ],
+}
+</code></pre></div>
+<h1 id="wan">WAN</h1>
+<p><div class="highlight"><pre><span></span><code>  &#39;bgp&#39;: { &#39;allowed_ISP_netblocks&#39;: [ &lt;ip&gt;, &lt;ip&gt;, ... ],
+           &#39;allowed_snmp_hosts&#39;: [ &lt;ip&gt;, &lt;ip, ... ],
+           &#39;auth&#39;: [ { &#39;ip&#39;: &lt;ip&gt;,
+                       &#39;key&#39;: &lt;passwd&gt;,
+                       &#39;peer&#39;: &lt;peer-description&gt; },
+                     ... ],
+           &#39;bgp_networks&#39;: [&lt;ip-prefix&gt;],
+           &#39;bogons&#39;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+           &#39;bogons_ipv6&#39;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+           &#39;default_ipv4_filter&#39;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+           &#39;default_ipv6_filter&#39;: [ &lt;ip-prefix&gt;, &lt;ip-prefix&gt;, ... ],
+           &#39;overlay_asn&#39;: &lt;ASN&gt;,
+           &#39;public_ipv4_filter&#39;: [&lt;ip-prefix&gt;],
+           &#39;public_ipv6_filter&#39;: [&lt;ip-prefix&gt;],
+           &#39;wan_peers&#39;: { &#39;border-routers&#39;: [ { &#39;asn&#39;: &lt;ASN&gt;,
+                                                &#39;ip&#39;: &lt;ip&gt;,
+                                                &#39;name&#39;: &lt;peer-name&gt; },
+                                              ... ],
+                          &#39;ddos&#39;: [ { &#39;as_prepend&#39;: None,
+                                      &#39;asn&#39;: &lt;ASN&gt;,
+                                      &#39;communities&#39;: [&#39;target:&lt;community-name&gt;&#39;],
+                                      &#39;ip&#39;: &lt;ip&gt;,
+                                      &#39;local_pref&#39;: None,
+                                      &#39;name&#39;: &lt;peer-description&gt; },
+                                    ... ],
+                          &#39;providers&#39;: [ { &#39;as_prepend&#39;: [None|&lt;int&gt;],
+                                           &#39;asn&#39;: &lt;peer-ASN&gt;,
+                                           &#39;disabled&#39;: &lt;bool&gt;,
+                                           &#39;ip&#39;: &lt;ip&gt;,
+                                           &#39;local_pref&#39;: [None|&lt;int&gt;],
+                                           &#39;name&#39;: &lt;peer-description&gt; },
+                                         ... ],
+                          &#39;service-nodes&#39;: [ { &#39;ip&#39;: &lt;ip&gt;,
+                                               &#39;name&#39;: &lt;peer-name&gt; },
+                                             ... ] },
+  &#39;can_deploy&#39;: &lt;bool&gt;,
+  &#39;custom_config_text&#39;: &lt;text&gt;,
+  &#39;ddos_filters&#39;: { &#39;ddos_ipv4_filter&#39;: [&lt;ip-prefix&gt;],
+                    &#39;ddos_ipv6_filter&#39;: [&lt;ip-prefix&gt;]},
+  &#39;device_platform&#39;: &lt;device-model&gt;,
+  &#39;device_role&#39;: &#39;WAN&#39;,
+  &#39;dhcp_servers&#39;: [&lt;ip&gt;, &lt;ip&gt;],
+  &#39;dhcp_vrf&#39;: &#39;&lt;VRF-name&gt;&#39;,
+  &#39;dns&#39;: { &#39;domainname&#39;: &lt;domain&gt;,
+           &#39;network-device-domainname&#39;: &lt;domain&gt;,
+           &#39;servers&#39;: [&lt;ip&gt;]},
+  &#39;hostname&#39;: &lt;device-name&gt;,
+  &#39;interfaces&#39;: [ { &#39;description&#39;: &lt;interface-description&gt;,
+                    &#39;enabled&#39;: &lt;bool&gt;,
+                    &#39;ipv4&#39;: [],
+                    &#39;ipv6&#39;: [],
+                    &#39;name&#39;: &lt;interface-name&gt;,
+                    &#39;type&#39;: { &#39;label&#39;: &lt;interface_type_label&gt;,
+                              &#39;value&#39;: &lt;interface_type&gt;},
+                  { &#39;description&#39;: &lt;interface-description&gt;,
+                    &#39;enabled&#39;: &lt;bool&gt;,
+                    &#39;gw_mac&#39;: &lt;mac-address&gt;,
+                    &#39;ipv4&#39;: [&lt;ip&gt;],
+                    &#39;ipv6&#39;: [&lt;ip&gt;],
+                    &#39;local_pref&#39;: &lt;int&gt;,
+                    &#39;name&#39;: &lt;interface-name&gt;,
+                    &#39;native_vlan&#39;: &lt;vlan-name&gt;,
+                    &#39;routed&#39;: True,
+                    &#39;subinterface&#39;: True,
+                    &#39;type&#39;: {&#39;label&#39;: &#39;Virtual&#39;, &#39;value&#39;: &#39;virtual&#39;},
+                    &#39;vrf&#39;: &lt;vrf-name&gt; },
+                  {&#39;name&#39;: &lt;interface-name&gt;, &#39;unused&#39;: True},
+                  ... ],
+  &#39;lacp&#39;: [ {&#39;members&#39;: [&lt;interface-name&gt;, &lt;interface-name&gt;], &#39;name&#39;: &lt;lag-name&gt;, &#39;tags&#39;: []}, ... ],
+  &#39;lacp_interfaces&#39;: [ &lt;interface-name&gt;, &lt;interface-name&gt;, ... ],
+  &#39;lag_count&#39;: &lt;int&gt;,
+  &#39;mgmt_hosts&#39;: [ &lt;ip&gt;, &lt;ip&gt;, ... ],
+  &#39;mgmt_ip&#39;: { &#39;default_gateway&#39;: &lt;ip&gt;,
+               &#39;ip&#39;: &lt;ip&gt;,
+               &#39;mask&#39;: &lt;mask_length&gt;,
+               &#39;vlan&#39;: &lt;vlan_id&gt; },
+  &#39;network_announcements&#39;: { &#39;announce_network&#39;: [ { &#39;children&#39;: &lt;int&gt;,
+                                                     &#39;family&#39;: [&#39;IPv4&#39;|&#39;IPv6&#39;],
+                                                     &#39;network&#39;: &lt;ip-prefix&gt; },
+                                                   ... ],
+                             &#39;announce_wan_network&#39;: [ { &#39;children&#39;: &lt;int&gt;,
+                                                         &#39;family&#39;: [&#39;IPv4&#39;|&#39;IPv6&#39;],
+                                                         &#39;network&#39;: &lt;ip-prefix&gt; },
+                                                       ... ] },
+  &#39;ntp&#39;: { &#39;servers&#39;: [ &lt;ip&gt;, &lt;ip&gt;, ... ],
+           &#39;timezone&#39;: &lt;timezone&gt; },
+  &#39;port_groups&#39;: { &lt;port-id&gt;: &lt;port-speed&gt;,
+                   ... },
+  &#39;root&#39;: { &#39;password&#39;: &lt;passwd&gt; },
+  &#39;router_id&#39;: &lt;ip&gt;,
+  &#39;rstp_priority&#39;: &lt;int&gt;,
+  &#39;servers&#39;: [&lt;ip&gt;],
+  &#39;snmp&#39;: { &#39;communities&#39;: {&lt;community&gt;: [&lt;subnet&gt;]},
+            &#39;trap_receivers&#39;: [&lt;ip&gt;] },
+  &#39;snmp-v3&#39;: { &#39;authentication-password&#39;: &lt;passwd&gt;,
+               &#39;privacy-password&#39;: &lt;passwd&gt;,
+               &#39;target-address&#39;: &lt;ip&gt;,
+               &#39;target-name&#39;: &lt;text&gt;,
+               &#39;user-name&#39;: &lt;username&gt; },
+  &#39;snmp_location&#39;: &lt;text&gt;,
+  &#39;syslog&#39;: { &#39;messages_ignore&#39;: [ &lt;text&gt;, &lt;text&gt;, &lt;text&gt;, ... ],
+              &#39;servers&#39;: [&lt;ip&gt;, &lt;ip&gt;] },
+  &#39;telemetry&#39;: {&#39;target-address&#39;: &lt;ip&gt;},
+  &#39;transit_vrf&#39;: &lt;vrf-name&gt;,
+  &#39;users&#39;: { &lt;username&gt;: { &#39;class&#39;: &#39;super-user&#39;,
+                     &#39;ssh&#39;: &#39;ssh-rsa &#39;
+                            &lt;key&gt;
+                            &lt;description&gt;,
+                     &#39;uid&#39;: &lt;int&gt;},
+             ... },
+  &#39;vendor&#39;: &lt;device-manufacturer&gt;,
+  &#39;vendor_model&#39;: &lt;device-model&gt;,
+  &#39;vlans&#39;: [ {&#39;name&#39;: &lt;vlan-name&gt;, &#39;tags&#39;: [], &#39;vid&#39;: &lt;int&gt;, &#39;vni&#39;: &lt;int&gt;}, ... ]
+}
+</code></pre></div>
+<!-- END INCLUDE --></p>
+</details>
+<h3 id="your-institution-here">Your Institution Here</h3>
+<div class="admonition quote">
+<p class="admonition-title">Your README</p>
+<p>Look how cool you'll be.</p>
+</div>
+<h3 id="contributing">Contributing</h3>
+<p>Use the handy link at the top-right to reach the Network Automation Forum's <a href="https://github.com/Network-Automation-Forum/handyinfo">handyinfo repository</a> (that's this site!)</p>
+<p>Create a <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo">fork</a>, clone your forked repository, add your awesome templates to this section, and then submit your <a href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request">pull request</a> to be merged in. Learn more on how to contribute with our <a href="https://github.com/Network-Automation-Forum/handyinfo/blob/main/.github/CONTRIBUTING.md">contributing guidelines</a> and at our <a href="https://github.com/Network-Automation-Forum/handyinfo/tree/main">README</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tracking"], "search": "../../assets/javascripts/workers/search.07f07601.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.56dfad97.min.js"></script>
+      
+    
+  </body>
+</html>
