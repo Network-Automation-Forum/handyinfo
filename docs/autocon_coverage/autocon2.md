@@ -3,7 +3,7 @@
 A collection of links to AC2 related content.
 
 ## Blogs
-- [Day 1 at AutoCon 2 - What IS Network Automation?](https://gratuitous-arp.net/definition-of-network-automation/)
+- [Day 1 at AutoCon 2 - What IS Network Automation? - Claudia de Luna](https://gratuitous-arp.net/definition-of-network-automation/)
 - [AutoCon 2 Recap: The End of the Beginning - NetBox Labs](https://netboxlabs.com/blog/autocon2-recap/)
 - [Key Insights from AutoCon2: Tackling the Challenges of Network Automation - Itential](https://www.itential.com/blog/company/news-events/key-insights-from-autocon-2-tackling-the-challenges-of-network-automation/)
 - [Thoughts on Autocon2: A Bluesky thread - Jeff McAdams](https://bsky.app/profile/jeffmca.bsky.social/post/3lbrttisnys23)
