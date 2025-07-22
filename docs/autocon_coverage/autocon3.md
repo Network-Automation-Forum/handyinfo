@@ -3,6 +3,7 @@
 A collection of links to AC3 related content.
 
 ## Blogs
+- [Autocon3 : The story of how I crossed a dream off my wishlist](https://umutsasmaz.com/autocon3-the-story-of-how-i-crossed-a-dream-off-my-wishlist/)
 - Add a link your content!
 
 ## Podcasts
