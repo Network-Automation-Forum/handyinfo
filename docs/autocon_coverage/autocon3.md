@@ -11,8 +11,11 @@ A collection of links to AC3 related content.
 - Add a link to your content!
 
 ## Videos
-- All session videos are [available for viewing](https://www.youtube.com/playlist?list=PLP6VWb4PEbEroTA3TQsdSg64AgghgPlvU).
+- All AC3 session videos are [available for viewing](https://www.youtube.com/playlist?list=PLP6VWb4PEbEroTA3TQsdSg64AgghgPlvU).
 - Add a link to your content!
 
 ## Slides
-- All slides are [available for download](https://github.com/Network-Automation-Forum/handyinfo/tree/main/docs/autocon_coverage/slides/AutoCon3).
+- All AC3 slides are [available for download](https://github.com/Network-Automation-Forum/handyinfo/tree/main/docs/autocon_coverage/slides/AutoCon3).
+
+## Summaries
+- A summary of each AutoCon 3 talk can be found [on our blog](https://networkautomation.forum/blog?tag=AC3)
