@@ -17,5 +17,8 @@ A collection of links to AC3 related content.
 ## Slides
 - All AC3 slides are [available for download](https://github.com/Network-Automation-Forum/handyinfo/tree/main/docs/autocon_coverage/slides/AutoCon3).
 
+## Workshops
+- WS:A2 - [Network Testing with NUTS](https://network-unit-testing-system.github.io/naf_workshop_nuts/)
+
 ## Summaries
 - A summary of each AutoCon 3 talk can be found [on our blog](https://networkautomation.forum/blog?tag=AC3)
