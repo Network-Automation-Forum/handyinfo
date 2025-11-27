@@ -3,7 +3,9 @@
 A collection of links to AC4 related content.
 
 ## Blogs
-- Add a link your content!
+- [GeReader - What AutoCon4 Taught Me](https://blog.gereader.xyz/posts/autocon4/)
+- [GeReader - NautoCon and AutoCon4 Session Notes](https://blog.gereader.xyz/posts/autocon4-notes/)
+- Add a link to your content!
 
 ## Podcasts
 - Add a link to your content!
