@@ -3,7 +3,8 @@
 A collection of links to AC4 related content.
 
 ## Blogs
-- Add a link your content!
+- [CodiLime’s Insights and Summary of Network Automation Forum AutoCon 4 2025](https://codilime.com/blog/network-automation-forum-autocon-4-insights-summary/)
+- Add a link to your content!
 
 ## Podcasts
 - Add a link to your content!
