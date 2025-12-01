@@ -47,7 +47,7 @@ Poetry shell spins up a python virtual environment and sources it.
 
 3. Install the Python Development Dependencies.
 
-This is a documentaiton repo so their is no `main` depnedencies, just `development` dependencies.
+This is a documentation repo so their is no `main` dependencies, just `development` dependencies.
 
 Run `poetry install --only dev` to install the development dependencies into the poetry virtualenv.
 
