@@ -5,6 +5,7 @@ A collection of links to AC4 related content.
 ## Blogs
 - [GeReader - What AutoCon4 Taught Me](https://blog.gereader.xyz/posts/autocon4/)
 - [GeReader - NautoCon and AutoCon4 Session Notes](https://blog.gereader.xyz/posts/autocon4-notes/)
+- [CodiLime’s Insights and Summary of Network Automation Forum AutoCon 4 2025](https://codilime.com/blog/network-automation-forum-autocon-4-insights-summary/)
 - Add a link to your content!
 
 ## Podcasts
