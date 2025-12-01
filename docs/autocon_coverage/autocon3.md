@@ -4,6 +4,8 @@ A collection of links to AC3 related content.
 
 ## Blogs
 - [Autocon3 : The story of how I crossed a dream off my wishlist](https://umutsasmaz.com/autocon3-the-story-of-how-i-crossed-a-dream-off-my-wishlist/)
+- [AutoCon 3: Network Automation’s Premier Conference - Ryburn.org](https://ryburn.org/2025/06/06/autocon-3-network-automations-premier-conference/)
+- [AutoCon3: Network Automation’s Premier Conference - Kentik](https://www.kentik.com/blog/autocon3-network-automations-premier-conference/)
 - Add a link your content!
 
 ## Podcasts
