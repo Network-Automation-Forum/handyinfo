@@ -8,6 +8,7 @@ A collection of links to AC4 related content.
 - [GeReader - What AutoCon4 Taught Me](https://blog.gereader.xyz/posts/autocon4/)
 - [GeReader - NautoCon and AutoCon4 Session Notes](https://blog.gereader.xyz/posts/autocon4-notes/)
 - [CodiLime’s Insights and Summary of Network Automation Forum AutoCon 4 2025](https://codilime.com/blog/network-automation-forum-autocon-4-insights-summary/)
+- [Autocon4: Writing the Network Automation Business Case - USNUA Blog by Jason Gintert](Autocon4: Writing the Network Automation Business Case)
 - Bart Smeding - [LinkedIn Post](https://www.linkedin.com/posts/bartsmeding_autocon4-autocon-naf-activity-7398404979117490177-rPeA/)
 - Patrick Dobry - [LinkedIn Post](https://www.linkedin.com/posts/patrickdobry_networkautomation-autocon4-netdevops-activity-7399492830697553920-ym8t/)
 - Carl Buchman - [LinkedIn Post](https://www.linkedin.com/posts/carl-buchmann-6b436727_on-my-way-back-home-from-autocon4-and-reflecting-activity-7397780701380771840-CLrs/)
