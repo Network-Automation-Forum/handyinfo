@@ -25,7 +25,7 @@ A collection of links to AC4 related content.
 
 ## Slides
 
-- All AC4 slides are available [here](./slides/AutoCon4/)!
+- All AC4 slides are available [here](https://github.com/Network-Automation-Forum/handyinfo/tree/main/docs/autocon_coverage/slides/AutoCon4)!
 
 ## Workshops
 
