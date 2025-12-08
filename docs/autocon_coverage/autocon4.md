@@ -25,10 +25,10 @@ A collection of links to AC4 related content.
 
 ## Slides
 
-- All AC4 slides are *coming soon*
+- All AC4 slides are available [here](./slides/AutoCon4/)!
 
 ## Workshops
 
+- WS:C2 - [Network Source of Truth](./slides/AutoCon4/Workshops/AC4-WS-C2-NSOT.pdf)
 - WS:C4 - [Network Testing with NUTS](https://network-unit-testing-system.github.io/naf_workshop_nuts/)
-- WS:C2 - [Network Source of Truth](./slides/Autocon4/Workshops/AC4-WS-C2-NSOT.pdf)
 - WS:D3 - [Managing Operational Drift in a Full Loop Network Automation Stack](https://github.com/netboxlabs/netbox-learning/tree/develop/autocon4-workshop)
