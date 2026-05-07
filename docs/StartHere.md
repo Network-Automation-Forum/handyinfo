@@ -2,6 +2,7 @@
 
 ## Fundamentals
 * [General](learning_materials/general.md) Automation Information
+* [NAF Framework](https://reference.networkautomation.forum/Framework/Framework/) Reference Model
 * [Python](learning_materials/python.md) Programming Language
 * [Go](learning_materials/go.md) Programming Langauage
 * [Git](learning_materials/git.md) Version Control
