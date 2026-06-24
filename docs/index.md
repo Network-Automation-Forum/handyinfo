@@ -16,7 +16,7 @@ Some of the info we find handy is from past AutoCon events:
 
 ## About this repo...
 
-Mostly this is stuff that comes out of discussions in our [Slack channel](https://join.slack.com/t/networkautoma-prb3593/shared_invite/zt-25rdfdmyf-qYoYgXEEMs7h_aqwC79Abg) or at our events. It can come from anywhere though, just make sure it is practical and accurate.
+Mostly this is stuff that comes out of discussions in our [Slack channel](https://join.slack.com/t/networkautomationfrm/shared_invite/zt-41o91fsdx-aBMGrlRcG8LjjAmrKfdmoQ) or at our events. It can come from anywhere though, just make sure it is practical and accurate.
 
 ## Prior Art
 
