@@ -21,6 +21,7 @@ nav:
       - AutoCon2: "autocon_coverage/autocon2.md"
       - AutoCon3: "autocon_coverage/autocon3.md"
       - AutoCon4: "autocon_coverage/autocon4.md"
+      - AutoCon5: "autocon_coverage/autocon5.md"
 
 
 repo_url: "https://github.com/Network-Automation-Forum/handyinfo"
