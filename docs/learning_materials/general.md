@@ -20,6 +20,8 @@ This section contains materials for concepts that do not necessarily fall under 
 ### Books
 * [Network Programmability and Automation: Skills for the Next-Generation Network Engineer 2nd Edition](https://amzn.to/48bBX7g)
 * [Model-Driven DevOps: Increasing agility and security in your physical network through DevOps](https://www.amazon.com/dp/0137644671)
+* [Modern Network Observability](https://www.packtpub.com/en-us/product/modern-network-observability-9781835083178)
+* [Designing Network Automation at Scale](https://designingnetworkautomation.com/)
 
 
 ## Software Development Concepts

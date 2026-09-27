@@ -8,7 +8,7 @@ Note: Depending on your use-case, Nornir may be more applicable. See our [Nornir
 * [https://github.com/ansible/ansible](https://github.com/ansible/ansible)
 
 ## Books
-* ???
+* [Network Automation Cookbook 2nd Edition](https://www.packtpub.com/en-us/product/network-automation-cookbook-9781835887998)
 
 ## Videos
 * [Ansible For Network Automation, Part 1: Why Ansible?](https://www.youtube.com/watch?v=99j9UbNP7LY&list=PLtO_OYBiEo6lW_LO-ucRuz7Z8_DJ62NAM&pp=iAQB)
